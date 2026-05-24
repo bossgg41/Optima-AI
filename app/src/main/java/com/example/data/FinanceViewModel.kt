@@ -193,6 +193,10 @@ class FinanceViewModel : ViewModel() {
 
     // --- Business Functions ---
 
+    companion object {
+        private val departmentDelimiters = listOf(":", ",", "current", "spend", "target", "cur", "opt", "$")
+    }
+
     /**
      * Set the current role for Role-Based Access Control
      */
@@ -330,7 +334,13 @@ class FinanceViewModel : ViewModel() {
                 val optimizedSpendVal = doubleValues[1]
                 
                 // Segment department from start of line up to first number or label separator
-                var departmentLabel = line.split(":", ",", "current", "spend", "target", "cur", "opt", "$")[0].trim()
+                val delimiterIdx = line.indexOfAny(departmentDelimiters)
+                var departmentLabel = if (delimiterIdx == -1) {
+                    line.trim()
+                } else {
+                    line.substring(0, delimiterIdx).trim()
+                }
+
                 if (departmentLabel.length > 35) {
                     departmentLabel = departmentLabel.take(35) + "..."
                 }

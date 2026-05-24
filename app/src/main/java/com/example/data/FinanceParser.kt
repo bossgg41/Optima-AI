@@ -187,31 +187,4 @@ object FinanceParser {
         }
         return result
     }
-
-    // --- Standard Sample Datasets ---
-
-    const val SAMPLE_A_CORPORATE = """Department,CurrentSpend,OptimizedSpend,Category,LeakageExplanation
-Executive Travel,185000,120000,Travel,Over-reliance on premium private corporate airlines and unmanaged hotel selections.
-Tech Marketing,450000,320000,Marketing,Un-segmented social ads and high churn on unoptimized bidding keywords.
-Infrastructure SaaS,305000,210000,SaaS Software,Unused enterprise database licenses and over-provisioned idle cloud servers.
-Fulfillment Operations,890000,810000,Operations,Sub-optimal route dispatch and high manual packaging overheads.
-R&D Lab,120000,125000,R&D,Efficient - requires supplementary specialized development equipment.
-Administrative Support,95000,75000,Payroll,Redundant manual auditing workflow that can be securely vaporized with automated reporting.
-Global HR Outreach,140000,110000,Payroll,Scattered recruiting contracts with high third-party placement agency percentage overheads."""
-
-    const val SAMPLE_B_RETAIL = """Department,CurrentSpend,OptimizedSpend,Category,LeakageExplanation
-Storefront Rent,640000,640000,Operations,Fixed lease rates. Not optimized directly but potential utility renegotiation can occur.
-Social Influence Promo,280000,160000,Marketing,High spend on macro-influencers with extremely low micro-conversion track records.
-Packaging Supplies,115000,85000,Operations,Non-biodegradable custom dyes. Transitioning to local recycled pulp supplies decreases waste.
-Logistics Logistics,520000,430000,Operations,Inefficient deadhead logistics truck return runs. Implementing GRU load dispatch avoids hollow trips.
-Legacy Software CRM,90000,50000,SaaS Software,Duplicative licensing with customer relations tools and redundant email blast servers.
-Creative Production,150000,120000,R&D,In-house studio unused assets and excessive graphic contractor margins."""
-
-    const val SAMPLE_C_BIOTECH = """Department,CurrentSpend,OptimizedSpend,Category,LeakageExplanation
-Lab Reagents,710000,680000,R&D,Standard cold-chain shipping. High cost but essential to scientific accuracy.
-Digital PR Blitz,320000,140000,Marketing,Premature massive digital banners and low-yield medical conference sponsorships.
-HighPerformance AWS,410000,280000,SaaS Software,Non-scheduled machine learning model training clusters left running over weekends.
-Executive Housing,120000,40000,Travel,Premium housing allowances with zero auditing checks or central bookings.
-Temp Scientific staff,380000,310000,Payroll,Exorbitant scientific temp agency premiums. Shifting to direct term contracts saves cost.
-Patents & Legal,200000,210000,Operations,Efficient IP protection filing and required legal diligence."""
 }

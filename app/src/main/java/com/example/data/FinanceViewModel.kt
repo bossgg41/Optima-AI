@@ -11,6 +11,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class FinanceViewModel : ViewModel() {
+    companion object {
+        private val NUMBER_REGEX = "\\d+[\\d,\\s]*\\.?\\d*".toRegex()
+    }
 
     private val TAG = "FinanceViewModel"
 
@@ -35,6 +38,9 @@ Global HR Outreach,140000,110000,Payroll,Scattered recruiting contracts with hig
                 }
             },
             forecasts = emptyList() // Will be computed on launch
+            reportName = "Empty Report",
+            costs = emptyList(),
+            forecasts = emptyList()
         )
     )
     val activeReport: StateFlow<FinancialReport> = _activeReport.asStateFlow()
@@ -88,7 +94,7 @@ Global HR Outreach,140000,110000,Payroll,Scattered recruiting contracts with hig
     fun formatCurrency(usdValue: Double): String {
         val converted = convertCurrency(usdValue)
         val symbol = getCurrencySymbol()
-        return "$symbol${String.format("%,.0f", converted)}"
+        return "$symbol${String.format("%,.2f", converted)}"
     }
 
     private val _isReportAnalyzing = MutableStateFlow(false)
@@ -203,6 +209,10 @@ Global HR Outreach,140000,110000,Payroll,Scattered recruiting contracts with hig
 
     // --- Business Functions ---
 
+    companion object {
+        private val departmentDelimiters = listOf(":", ",", "current", "spend", "target", "cur", "opt", "$")
+    }
+
     /**
      * Set the current role for Role-Based Access Control
      */
@@ -309,7 +319,7 @@ Global HR Outreach,140000,110000,Payroll,Scattered recruiting contracts with hig
         }
     }
 
-    private fun heuristicExtract(format: String, text: String): ParserResult<List<DepartmentCost>> {
+    internal fun heuristicExtract(format: String, text: String): ParserResult<List<DepartmentCost>> {
         val formatClean = format.trim().lowercase()
         // If it's pure CSV text (or if we find commas structure), try direct parsing first
         if (formatClean == "xlsx/csv" || text.contains(",")) {
@@ -330,7 +340,7 @@ Global HR Outreach,140000,110000,Payroll,Scattered recruiting contracts with hig
             // Replaces dollar signs, commas, or 'k' suffix for simple processing
             val cleanLine = line.replace("$", "").replace("k", "000").replace("K", "000")
             
-            val doubleValues = "\\d+[\\d,\\s]*\\.?\\d*".toRegex().findAll(cleanLine)
+            val doubleValues = NUMBER_REGEX.findAll(cleanLine)
                 .map { it.value.replace(" ", "").replace(",", "").toDoubleOrNull() }
                 .filterNotNull()
                 .toList()
@@ -340,7 +350,13 @@ Global HR Outreach,140000,110000,Payroll,Scattered recruiting contracts with hig
                 val optimizedSpendVal = doubleValues[1]
                 
                 // Segment department from start of line up to first number or label separator
-                var departmentLabel = line.split(":", ",", "current", "spend", "target", "cur", "opt", "$")[0].trim()
+                val delimiterIdx = line.indexOfAny(departmentDelimiters)
+                var departmentLabel = if (delimiterIdx == -1) {
+                    line.trim()
+                } else {
+                    line.substring(0, delimiterIdx).trim()
+                }
+
                 if (departmentLabel.length > 35) {
                     departmentLabel = departmentLabel.take(35) + "..."
                 }

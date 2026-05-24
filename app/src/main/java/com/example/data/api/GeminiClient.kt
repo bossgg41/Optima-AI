@@ -6,13 +6,9 @@ import android.util.Log
 import com.example.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
-import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.ResponseBody
 import retrofit2.Retrofit
 import retrofit2.http.Body
-import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Query
 import java.io.ByteArrayOutputStream
@@ -63,7 +59,8 @@ object GeminiClient {
         .addConverterFactory(retrofit2.converter.moshi.MoshiConverterFactory.create(moshi))
         .build()
 
-    val apiService: GeminiApiService = retrofit.create(GeminiApiService::class.java)
+    var apiService: GeminiApiService = retrofit.create(GeminiApiService::class.java)
+    var apiKey: String = BuildConfig.GEMINI_API_KEY
 
     /**
      * Call the Gemini API Model 'gemini-3.5-flash' to generate analysis, explanation, or chat answers.
@@ -73,7 +70,7 @@ object GeminiClient {
         systemInstruction: String = "You are an expert AI Data-Processing Engineer and chief financial analyst.",
         bitmap: Bitmap? = null
     ): String = withContext(Dispatchers.IO) {
-        val apiKey = BuildConfig.GEMINI_API_KEY
+        val apiKey = this@GeminiClient.apiKey
         if (apiKey.isEmpty() || apiKey == "MY_GEMINI_API_KEY" || apiKey == "GEMINI_API_KEY_DEFAULTS") {
             Log.w(TAG, "Gemini API key is not configured in .env. Running in smart simulation mode.")
             return@withContext simulateGeminiFallback(prompt)

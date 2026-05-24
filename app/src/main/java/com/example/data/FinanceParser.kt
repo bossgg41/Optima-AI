@@ -185,5 +185,4 @@ object FinanceParser {
         }
         return result
     }
-
 }

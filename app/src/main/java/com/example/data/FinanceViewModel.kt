@@ -303,7 +303,7 @@ class FinanceViewModel : ViewModel() {
         }
     }
 
-    private fun heuristicExtract(format: String, text: String): ParserResult<List<DepartmentCost>> {
+    internal fun heuristicExtract(format: String, text: String): ParserResult<List<DepartmentCost>> {
         val formatClean = format.trim().lowercase()
         // If it's pure CSV text (or if we find commas structure), try direct parsing first
         if (formatClean == "xlsx/csv" || text.contains(",")) {

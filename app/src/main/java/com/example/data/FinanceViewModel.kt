@@ -17,14 +17,9 @@ class FinanceViewModel : ViewModel() {
     // --- Active Dataset State ---
     private val _activeReport = MutableStateFlow<FinancialReport>(
         FinancialReport(
-            reportName = "Standard Sample (Corporate Retailer)",
-            costs = FinanceParser.parseCostCsv(FinanceParser.SAMPLE_A_CORPORATE).let {
-                when (it) {
-                    is ParserResult.Success -> it.data
-                    else -> emptyList()
-                }
-            },
-            forecasts = emptyList() // Will be computed on launch
+            reportName = "Empty Report",
+            costs = emptyList(),
+            forecasts = emptyList()
         )
     )
     val activeReport: StateFlow<FinancialReport> = _activeReport.asStateFlow()
@@ -373,19 +368,6 @@ class FinanceViewModel : ViewModel() {
         }
 
         return ParserResult.Success(rows)
-    }
-
-    /**
-     * Quick preset loaders for user productivity
-     */
-    fun loadPresetDataset(presetName: String) {
-        val csvText = when (presetName) {
-            "SaaS Corporate" -> FinanceParser.SAMPLE_A_CORPORATE
-            "Retail Supplier" -> FinanceParser.SAMPLE_B_RETAIL
-            "Biotech Lab" -> FinanceParser.SAMPLE_C_BIOTECH
-            else -> FinanceParser.SAMPLE_A_CORPORATE
-        }
-        applyUploadedDataset(presetName, csvText)
     }
 
     /**

@@ -1,7 +1,5 @@
 package com.example.data
 
-import android.util.Log
-
 /**
  * Result wrapper for file parsing and validation operations.
  */

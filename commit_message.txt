@@ -1,0 +1,6 @@
+🧹 [code health] Refactor DataCoreScreen by extracting smaller composables
+
+🎯 **What:** Extracted several smaller, single-purpose composables (`CoreHeader`, `GuestWarning`, `ValidationRulesChecklist`, `FormatSelector`, `SimulatedFilePicker`, `OcrEditConsole`, `ParseActionButton`, `OperationalReportingOutputs`) from the massive `DataCoreScreen` function.
+💡 **Why:** The original `DataCoreScreen` function was over 500 lines long, making it difficult to read, maintain, and test. By extracting logical sections into their own composables, we adhere better to the Single Responsibility Principle, improving readability and maintainability.
+✅ **Verification:** Ran `./gradlew assembleDebug` to ensure the project still compiles correctly. Ran `./gradlew test` to ensure existing tests still pass. The behavior and structure of the UI remain exactly the same.
+✨ **Result:** A much cleaner, modular `DataCoreScreen.kt` file.

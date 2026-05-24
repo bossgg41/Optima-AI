@@ -59,428 +59,67 @@ fun DashboardScreen(
     ) {
         // Core Header
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = "Real-Time Optimization Desk",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = NeonEmerald
-                    )
-                    Text(
-                        text = "Active Dataset: ${report.reportName}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = SoftGrayText
-                    )
-                }
-
-                // Role Quick Indicator Pill
-                Box(
-                    modifier = Modifier
-                        .background(
-                            when (activeRole) {
-                                UserRole.ADMIN -> NeonEmerald.copy(alpha = 0.2f)
-                                UserRole.ANALYST -> CyberCobalt.copy(alpha = 0.2f)
-                                UserRole.GUEST -> SoftGrayText.copy(alpha = 0.2f)
-                            },
-                            RoundedCornerShape(12.dp)
-                        )
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                ) {
-                    Text(
-                        text = activeRole.label,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = when (activeRole) {
-                            UserRole.ADMIN -> NeonEmerald
-                            UserRole.ANALYST -> CyberCobalt
-                            UserRole.GUEST -> SoftGrayText
-                        }
-                    )
-                }
-            }
+            DashboardHeader(reportName = report.reportName, activeRole = activeRole)
         }
 
         // --- Multi-Currency Selector Row ---
         item {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = IceBlueCard),
-                shape = RoundedCornerShape(16.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, SolidGrayCard),
+            CurrencySelector(
+                activeCurrency = activeCurrency,
+                onCurrencySelected = { code -> viewModel.activeCurrency.value = code },
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Visualized Currency Currency Base:",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = SoftGrayText
-                    )
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf("USD" to "$", "EUR" to "€", "GBP" to "£", "INR" to "₹").forEach { (code, symbol) ->
-                            val isSelected = activeCurrency == code
-                            FilterChip(
-                                selected = isSelected,
-                                onClick = { viewModel.activeCurrency.value = code },
-                                label = { Text("$code ($symbol)", fontSize = 11.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = NeonEmerald.copy(alpha = 0.15f),
-                                    selectedLabelColor = NeonEmerald,
-                                    selectedLeadingIconColor = NeonEmerald
-                                )
-                            )
-                        }
-                    }
-                }
-            }
+            )
         }
 
         // --- Dynamic Strategic Scorecard: Health, Burn, Runway, and Anomaly Diagnostics ---
         item {
-            Card(
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = IceBlueCard),
-                border = androidx.compose.foundation.BorderStroke(1.dp, SolidGrayCard),
+            StrategicScorecard(
+                healthScore = healthScore,
+                runwayMonths = runwayMonths,
+                wastePercentage = report.wastePercentage,
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Neural Health & Runway Diagnostics",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = PureWhite
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        // 1. Health gauge
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = when {
-                                    healthScore > 80.0 -> NeonEmerald.copy(alpha = 0.08f)
-                                    healthScore > 50.0 -> GoldGain.copy(alpha = 0.08f)
-                                    else -> WasteCoral.copy(alpha = 0.08f)
-                                }
-                            ),
-                            shape = RoundedCornerShape(14.dp),
-                            modifier = Modifier
-                                .weight(1.1f)
-                                .height(130.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(12.dp),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = "${String.format("%.0f", healthScore)}",
-                                    style = MaterialTheme.typography.headlineLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = when {
-                                        healthScore > 80.0 -> NeonEmerald
-                                        healthScore > 50.0 -> GoldGain
-                                        else -> WasteCoral
-                                    },
-                                    fontSize = 36.sp
-                                )
-                                Text(
-                                    text = "Financial Health Score",
-                                    fontSize = 11.sp,
-                                    color = SoftGrayText,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = when {
-                                        healthScore > 80.0 -> "Optimal Balance"
-                                        healthScore > 50.0 -> "Moderate Leakage"
-                                        else -> "High-Risk Deficits"
-                                    },
-                                    fontSize = 10.sp,
-                                    color = SoftGrayText
-                                )
-                            }
-                        }
-
-                        // 2. Runway Status
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (runwayMonths < 6.0) WasteCoral.copy(alpha = 0.08f) else FutureViolet.copy(alpha = 0.08f)
-                            ),
-                            shape = RoundedCornerShape(14.dp),
-                            modifier = Modifier
-                                .weight(1.1f)
-                                .height(130.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(12.dp),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = if (runwayMonths > 50.0) "50+ Mo" else String.format("%.1f Mo", runwayMonths),
-                                    style = MaterialTheme.typography.headlineLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (runwayMonths < 6.0) WasteCoral else FutureViolet,
-                                    fontSize = 32.sp
-                                )
-                                Text(
-                                    text = "Startup Capital Runway",
-                                    fontSize = 11.sp,
-                                    color = SoftGrayText,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = if (runwayMonths < 6.0) Icons.Default.Warning else Icons.Default.Check,
-                                        contentDescription = null,
-                                        tint = if (runwayMonths < 6.0) WasteCoral else NeonEmerald,
-                                        modifier = Modifier.size(10.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = if (runwayMonths < 6.0) "Budget Alert Raised" else "Sustained Runway",
-                                        fontSize = 9.sp,
-                                        color = SoftGrayText
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // Anomaly detection status bar
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = null,
-                                tint = if (report.wastePercentage > 15.0) WasteCoral else NeonEmerald,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = if (report.wastePercentage > 15.0) "AI Warning: Unoptimized cost anomalies found." else "No critical anomalies spotted in active dataset.",
-                                fontSize = 11.sp,
-                                color = SoftGrayText
-                            )
-                        }
-                        Text(
-                            text = "ESG: Tracked",
-                            fontSize = 10.sp,
-                            color = NeonEmerald,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
+            )
         }
 
         // Executive KPI Row cards
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                KpiCard(
-                    title = "Total Annual Spend",
-                    value = viewModel.formatCurrency(report.totalCurrentSpend),
-                    icon = Icons.Default.Warning,
-                    tint = WasteCoral,
-                    modifier = Modifier.weight(1f)
-                )
-                KpiCard(
-                    title = "Optimized outlay",
-                    value = viewModel.formatCurrency(report.totalOptimizedSpend),
-                    icon = Icons.Default.CheckCircle,
-                    tint = NeonEmerald,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                KpiCard(
-                    title = "Identified Waste",
-                    value = viewModel.formatCurrency(report.totalSavings),
-                    icon = Icons.Default.Warning,
-                    tint = WasteCoral,
-                    percentageDetail = "${String.format("%.1f", report.wastePercentage)}% leak",
-                    modifier = Modifier.weight(1f)
-                )
-                KpiCard(
-                    title = "Neural Conv. Accuracy",
-                    value = "98.24% MSE",
-                    icon = Icons.Default.Star,
-                    tint = FutureViolet,
-                    percentageDetail = "Transformer L3",
-                    modifier = Modifier.weight(1f)
-                )
-            }
+            ExecutiveKpiSection(
+                totalCurrentSpend = report.totalCurrentSpend,
+                totalOptimizedSpend = report.totalOptimizedSpend,
+                totalSavings = report.totalSavings,
+                wastePercentage = report.wastePercentage,
+                formatCurrency = { viewModel.formatCurrency(it) },
+                modifier = Modifier.fillMaxWidth()
+            )
         }
 
         // Live parameter Adjusters (Locked for view-only Guest role for proper RBAC demonstration)
         item {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = androidx.compose.ui.graphics.Color(0xFF0F172A)),
-                shape = RoundedCornerShape(24.dp),
+            ModelTuningParameters(
+                targetGrowthVal = targetGrowthVal,
+                inputMoneyVal = inputMoneyVal,
+                riskToleranceVal = riskToleranceVal,
+                cashReserves = cashReserves,
+                isAdmin = isAdmin,
+                isGuest = isGuest,
+                onTargetGrowthChange = {
+                    viewModel.targetGrowth.value = it
+                    viewModel.recomputeForecast()
+                },
+                onInputMoneyChange = {
+                    viewModel.inputMoney.value = it
+                    viewModel.recomputeForecast()
+                },
+                onRiskToleranceChange = {
+                    viewModel.riskTolerance.value = it
+                    viewModel.recomputeForecast()
+                },
+                onCashReservesChange = {
+                    viewModel.startupCashReserves.value = it
+                },
+                formatCurrency = { viewModel.formatCurrency(it) },
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Model Tuning Parameters",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = androidx.compose.ui.graphics.Color.White
-                        )
-                        
-                        if (isGuest) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Lock,
-                                    contentDescription = "Guest locked",
-                                    tint = WasteCoral,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("RBAC LOCKED", style = MaterialTheme.typography.labelSmall, color = WasteCoral)
-                            }
-                        } else {
-                            Text("ADMIN ENABLED", style = MaterialTheme.typography.labelSmall, color = NeonEmerald)
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    // Slider 1: Target Profit growth %
-                    val growthDoubleValue = targetGrowthVal.toDoubleOrNull() ?: 15.0
-                    Text(
-                        text = "Target Profit Increase: ${String.format("%.1f", growthDoubleValue)}%",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = androidx.compose.ui.graphics.Color.White
-                    )
-                    Slider(
-                        value = growthDoubleValue.toFloat().coerceIn(5f, 60f),
-                        onValueChange = {
-                            if (isAdmin) {
-                                viewModel.targetGrowth.value = String.format("%.1f", it)
-                                viewModel.recomputeForecast()
-                            }
-                        },
-                        valueRange = 5f..60f,
-                        enabled = isAdmin,
-                        colors = SliderDefaults.colors(
-                            thumbColor = NeonEmerald,
-                            activeTrackColor = NeonEmerald,
-                            inactiveTrackColor = androidx.compose.ui.graphics.Color(0xFF334155)
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Slider 2: Input Capital to re-allocate
-                    val capitalDoubleValue = inputMoneyVal.toDoubleOrNull() ?: 120000.0
-                    Text(
-                        text = "Inputted Active Capital: ${viewModel.formatCurrency(capitalDoubleValue)}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = androidx.compose.ui.graphics.Color.White
-                    )
-                    Slider(
-                        value = capitalDoubleValue.toFloat().coerceIn(1000f, 250000f),
-                        onValueChange = {
-                            if (isAdmin) {
-                                viewModel.inputMoney.value = String.format("%.0f", it)
-                                viewModel.recomputeForecast()
-                            }
-                        },
-                        valueRange = 1000f..250000f,
-                        enabled = isAdmin,
-                        colors = SliderDefaults.colors(
-                            thumbColor = CyberCobalt,
-                            activeTrackColor = CyberCobalt,
-                            inactiveTrackColor = androidx.compose.ui.graphics.Color(0xFF334155)
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Slider 3: Risk Tolerance %
-                    val riskDoubleValueCurrent = riskToleranceVal.toDoubleOrNull() ?: 20.0
-                    Text(
-                        text = "Risk Appetite: ${String.format("%.1f", riskDoubleValueCurrent)}%",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = androidx.compose.ui.graphics.Color.White
-                    )
-                    Slider(
-                        value = riskDoubleValueCurrent.toFloat().coerceIn(5f, 95f),
-                        onValueChange = {
-                            if (isAdmin) {
-                                viewModel.riskTolerance.value = String.format("%.1f", it)
-                                viewModel.recomputeForecast()
-                            }
-                        },
-                        valueRange = 5f..95f,
-                        enabled = isAdmin,
-                        colors = SliderDefaults.colors(
-                            thumbColor = FutureViolet,
-                            activeTrackColor = FutureViolet,
-                            inactiveTrackColor = androidx.compose.ui.graphics.Color(0xFF334155)
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Slider 4: Startup Liquid Cash Reserves (Competitor Feature)
-                    Text(
-                        text = "Startup Liquid Reserves: ${viewModel.formatCurrency(cashReserves)}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = androidx.compose.ui.graphics.Color.White
-                    )
-                    Slider(
-                        value = cashReserves.toFloat().coerceIn(10000f, 1500000f),
-                        onValueChange = {
-                            if (isAdmin) {
-                                viewModel.startupCashReserves.value = String.format("%.0f", it)
-                            }
-                        },
-                        valueRange = 10000f..1500000f,
-                        enabled = isAdmin,
-                        colors = SliderDefaults.colors(
-                            thumbColor = GoldGain,
-                            activeTrackColor = GoldGain,
-                            inactiveTrackColor = androidx.compose.ui.graphics.Color(0xFF334155)
-                        )
-                    )
-                }
-            }
+            )
         }
 
         // Charts
@@ -542,6 +181,465 @@ fun KpiCard(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun DashboardHeader(
+    reportName: String,
+    activeRole: UserRole,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(
+                text = "Real-Time Optimization Desk",
+                style = MaterialTheme.typography.headlineMedium,
+                color = NeonEmerald
+            )
+            Text(
+                text = "Active Dataset: $reportName",
+                style = MaterialTheme.typography.bodyMedium,
+                color = SoftGrayText
+            )
+        }
+
+        // Role Quick Indicator Pill
+        Box(
+            modifier = Modifier
+                .background(
+                    when (activeRole) {
+                        UserRole.ADMIN -> NeonEmerald.copy(alpha = 0.2f)
+                        UserRole.ANALYST -> CyberCobalt.copy(alpha = 0.2f)
+                        UserRole.GUEST -> SoftGrayText.copy(alpha = 0.2f)
+                    },
+                    RoundedCornerShape(12.dp)
+                )
+                .padding(horizontal = 12.dp, vertical = 6.dp)
+        ) {
+            Text(
+                text = activeRole.label,
+                style = MaterialTheme.typography.labelMedium,
+                color = when (activeRole) {
+                    UserRole.ADMIN -> NeonEmerald
+                    UserRole.ANALYST -> CyberCobalt
+                    UserRole.GUEST -> SoftGrayText
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun CurrencySelector(
+    activeCurrency: String,
+    onCurrencySelected: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = IceBlueCard),
+        shape = RoundedCornerShape(16.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, SolidGrayCard),
+        modifier = modifier
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Visualized Currency Currency Base:",
+                style = MaterialTheme.typography.labelMedium,
+                color = SoftGrayText
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("USD" to "$", "EUR" to "€", "GBP" to "£", "INR" to "₹").forEach { (code, symbol) ->
+                    val isSelected = activeCurrency == code
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = { onCurrencySelected(code) },
+                        label = { Text("$code ($symbol)", fontSize = 11.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = NeonEmerald.copy(alpha = 0.15f),
+                            selectedLabelColor = NeonEmerald,
+                            selectedLeadingIconColor = NeonEmerald
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun StrategicScorecard(
+    healthScore: Double,
+    runwayMonths: Double,
+    wastePercentage: Double,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = IceBlueCard),
+        border = androidx.compose.foundation.BorderStroke(1.dp, SolidGrayCard),
+        modifier = modifier
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Neural Health & Runway Diagnostics",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = PureWhite
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // 1. Health gauge
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = when {
+                            healthScore > 80.0 -> NeonEmerald.copy(alpha = 0.08f)
+                            healthScore > 50.0 -> GoldGain.copy(alpha = 0.08f)
+                            else -> WasteCoral.copy(alpha = 0.08f)
+                        }
+                    ),
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier
+                        .weight(1.1f)
+                        .height(130.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "${String.format("%.0f", healthScore)}",
+                            style = MaterialTheme.typography.headlineLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = when {
+                                healthScore > 80.0 -> NeonEmerald
+                                healthScore > 50.0 -> GoldGain
+                                else -> WasteCoral
+                            },
+                            fontSize = 36.sp
+                        )
+                        Text(
+                            text = "Financial Health Score",
+                            fontSize = 11.sp,
+                            color = SoftGrayText,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = when {
+                                healthScore > 80.0 -> "Optimal Balance"
+                                healthScore > 50.0 -> "Moderate Leakage"
+                                else -> "High-Risk Deficits"
+                            },
+                            fontSize = 10.sp,
+                            color = SoftGrayText
+                        )
+                    }
+                }
+
+                // 2. Runway Status
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (runwayMonths < 6.0) WasteCoral.copy(alpha = 0.08f) else FutureViolet.copy(alpha = 0.08f)
+                    ),
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier
+                        .weight(1.1f)
+                        .height(130.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = if (runwayMonths > 50.0) "50+ Mo" else String.format("%.1f Mo", runwayMonths),
+                            style = MaterialTheme.typography.headlineLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = if (runwayMonths < 6.0) WasteCoral else FutureViolet,
+                            fontSize = 32.sp
+                        )
+                        Text(
+                            text = "Startup Capital Runway",
+                            fontSize = 11.sp,
+                            color = SoftGrayText,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = if (runwayMonths < 6.0) Icons.Default.Warning else Icons.Default.Check,
+                                contentDescription = null,
+                                tint = if (runwayMonths < 6.0) WasteCoral else NeonEmerald,
+                                modifier = Modifier.size(10.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = if (runwayMonths < 6.0) "Budget Alert Raised" else "Sustained Runway",
+                                fontSize = 9.sp,
+                                color = SoftGrayText
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Anomaly detection status bar
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        tint = if (wastePercentage > 15.0) WasteCoral else NeonEmerald,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = if (wastePercentage > 15.0) "AI Warning: Unoptimized cost anomalies found." else "No critical anomalies spotted in active dataset.",
+                        fontSize = 11.sp,
+                        color = SoftGrayText
+                    )
+                }
+                Text(
+                    text = "ESG: Tracked",
+                    fontSize = 10.sp,
+                    color = NeonEmerald,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ExecutiveKpiSection(
+    totalCurrentSpend: Double,
+    totalOptimizedSpend: Double,
+    totalSavings: Double,
+    wastePercentage: Double,
+    formatCurrency: (Double) -> String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            KpiCard(
+                title = "Total Annual Spend",
+                value = formatCurrency(totalCurrentSpend),
+                icon = Icons.Default.Warning,
+                tint = WasteCoral,
+                modifier = Modifier.weight(1f)
+            )
+            KpiCard(
+                title = "Optimized outlay",
+                value = formatCurrency(totalOptimizedSpend),
+                icon = Icons.Default.CheckCircle,
+                tint = NeonEmerald,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            KpiCard(
+                title = "Identified Waste",
+                value = formatCurrency(totalSavings),
+                icon = Icons.Default.Warning,
+                tint = WasteCoral,
+                percentageDetail = "${String.format("%.1f", wastePercentage)}% leak",
+                modifier = Modifier.weight(1f)
+            )
+            KpiCard(
+                title = "Neural Conv. Accuracy",
+                value = "98.24% MSE",
+                icon = Icons.Default.Star,
+                tint = FutureViolet,
+                percentageDetail = "Transformer L3",
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+fun ModelTuningParameters(
+    targetGrowthVal: String,
+    inputMoneyVal: String,
+    riskToleranceVal: String,
+    cashReserves: Double,
+    isAdmin: Boolean,
+    isGuest: Boolean,
+    onTargetGrowthChange: (String) -> Unit,
+    onInputMoneyChange: (String) -> Unit,
+    onRiskToleranceChange: (String) -> Unit,
+    onCashReservesChange: (String) -> Unit,
+    formatCurrency: (Double) -> String,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = androidx.compose.ui.graphics.Color(0xFF0F172A)),
+        shape = RoundedCornerShape(24.dp),
+        modifier = modifier
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Model Tuning Parameters",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = androidx.compose.ui.graphics.Color.White
+                )
+
+                if (isGuest) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "Guest locked",
+                            tint = WasteCoral,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("RBAC LOCKED", style = MaterialTheme.typography.labelSmall, color = WasteCoral)
+                    }
+                } else {
+                    Text("ADMIN ENABLED", style = MaterialTheme.typography.labelSmall, color = NeonEmerald)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Slider 1: Target Profit growth %
+            val growthDoubleValue = targetGrowthVal.toDoubleOrNull() ?: 15.0
+            Text(
+                text = "Target Profit Increase: ${String.format("%.1f", growthDoubleValue)}%",
+                style = MaterialTheme.typography.bodyMedium,
+                color = androidx.compose.ui.graphics.Color.White
+            )
+            Slider(
+                value = growthDoubleValue.toFloat().coerceIn(5f, 60f),
+                onValueChange = {
+                    if (isAdmin) {
+                        onTargetGrowthChange(String.format("%.1f", it))
+                    }
+                },
+                valueRange = 5f..60f,
+                enabled = isAdmin,
+                colors = SliderDefaults.colors(
+                    thumbColor = NeonEmerald,
+                    activeTrackColor = NeonEmerald,
+                    inactiveTrackColor = androidx.compose.ui.graphics.Color(0xFF334155)
+                )
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Slider 2: Input Capital to re-allocate
+            val capitalDoubleValue = inputMoneyVal.toDoubleOrNull() ?: 120000.0
+            Text(
+                text = "Inputted Active Capital: ${formatCurrency(capitalDoubleValue)}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = androidx.compose.ui.graphics.Color.White
+            )
+            Slider(
+                value = capitalDoubleValue.toFloat().coerceIn(1000f, 250000f),
+                onValueChange = {
+                    if (isAdmin) {
+                        onInputMoneyChange(String.format("%.0f", it))
+                    }
+                },
+                valueRange = 1000f..250000f,
+                enabled = isAdmin,
+                colors = SliderDefaults.colors(
+                    thumbColor = CyberCobalt,
+                    activeTrackColor = CyberCobalt,
+                    inactiveTrackColor = androidx.compose.ui.graphics.Color(0xFF334155)
+                )
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Slider 3: Risk Tolerance %
+            val riskDoubleValueCurrent = riskToleranceVal.toDoubleOrNull() ?: 20.0
+            Text(
+                text = "Risk Appetite: ${String.format("%.1f", riskDoubleValueCurrent)}%",
+                style = MaterialTheme.typography.bodyMedium,
+                color = androidx.compose.ui.graphics.Color.White
+            )
+            Slider(
+                value = riskDoubleValueCurrent.toFloat().coerceIn(5f, 95f),
+                onValueChange = {
+                    if (isAdmin) {
+                        onRiskToleranceChange(String.format("%.1f", it))
+                    }
+                },
+                valueRange = 5f..95f,
+                enabled = isAdmin,
+                colors = SliderDefaults.colors(
+                    thumbColor = FutureViolet,
+                    activeTrackColor = FutureViolet,
+                    inactiveTrackColor = androidx.compose.ui.graphics.Color(0xFF334155)
+                )
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Slider 4: Startup Liquid Cash Reserves (Competitor Feature)
+            Text(
+                text = "Startup Liquid Reserves: ${formatCurrency(cashReserves)}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = androidx.compose.ui.graphics.Color.White
+            )
+            Slider(
+                value = cashReserves.toFloat().coerceIn(10000f, 1500000f),
+                onValueChange = {
+                    if (isAdmin) {
+                        onCashReservesChange(String.format("%.0f", it))
+                    }
+                },
+                valueRange = 10000f..1500000f,
+                enabled = isAdmin,
+                colors = SliderDefaults.colors(
+                    thumbColor = GoldGain,
+                    activeTrackColor = GoldGain,
+                    inactiveTrackColor = androidx.compose.ui.graphics.Color(0xFF334155)
+                )
+            )
         }
     }
 }

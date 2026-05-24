@@ -9,8 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -106,47 +106,6 @@ fun ComparativeForecastChart(
 
                 val stepX = chartWidth / (points.size - 1)
 
-                // 1. Draw grid horizontal lines & text metrics
-                val gridCount = 4
-                for (i in 0..gridCount) {
-                    val ratio = i.toFloat() / gridCount
-                    val y = height - paddingBottom - (ratio * chartHeight)
-                    val valueRepr = minVal + (ratio * valRange)
-
-                    // Draw line
-                    drawLine(
-                        color = SolidGrayCard.copy(alpha = 0.45f),
-                        start = Offset(paddingLeft, y),
-                        end = Offset(width - paddingRight, y),
-                        strokeWidth = 1.dp.toPx()
-                    )
-
-                    // Draw label
-                    drawText(
-                        textMeasurer = texMeasurer,
-                        text = "$${String.format("%.0f", valueRepr / 1000)}k",
-                        style = TextStyle(color = SoftGrayText, fontSize = 9.sp),
-                        topLeft = Offset(5.dp.toPx(), y - 7.dp.toPx())
-                    )
-                }
-
-                // 2. Draw vertical period lines & X Labels
-                points.forEachIndexed { idx, point ->
-                    val x = paddingLeft + (idx * stepX)
-                    
-                    // Period title text format Month 1 -> M1
-                    val labelText = point.period.replace("Month ", "M")
-
-                    if (idx % 2 == 0 || idx == points.size - 1) {
-                        drawText(
-                            textMeasurer = texMeasurer,
-                            text = labelText,
-                            style = TextStyle(color = SoftGrayText, fontSize = 9.sp),
-                            topLeft = Offset(x - 6.dp.toPx(), height - paddingBottom + 5.dp.toPx())
-                        )
-                    }
-                }
-
                 // Helper map values to coordinates
                 fun getPointOffset(index: Int, rawValue: Double): Offset {
                     val x = paddingLeft + (index * stepX)
@@ -154,92 +113,162 @@ fun ComparativeForecastChart(
                     return Offset(x, y)
                 }
 
-                // 3. Draw LSTM Confidence interval fill
-                val pathInterval = Path()
-                // Top boundary (Confidence Max)
-                points.forEachIndexed { idx, pt ->
-                    val offset = getPointOffset(idx, pt.confidenceIntervalMax)
-                    if (idx == 0) pathInterval.moveTo(offset.x, offset.y) else pathInterval.lineTo(offset.x, offset.y)
-                }
-                // Bottom boundary (Confidence Min) backward
-                for (idx in points.indices.reversed()) {
-                    val pt = points[idx]
-                    val offset = getPointOffset(idx, pt.confidenceIntervalMin)
-                    pathInterval.lineTo(offset.x, offset.y)
-                }
-                pathInterval.close()
-
-                drawPath(
-                    path = pathInterval,
-                    color = CyberCobalt.copy(alpha = 0.1f),
-                    style = androidx.compose.ui.graphics.drawscope.Fill
-                )
-
-                // 4. Draw Lines for predictions
-                val lstmPath = Path()
-                val gruPath = Path()
-                val transformerPath = Path()
-                val historicalPath = Path()
-
-                points.forEachIndexed { idx, pt ->
-                    val lstmOffset = getPointOffset(idx, pt.lstmForecast)
-                    val gruOffset = getPointOffset(idx, pt.gruForecast)
-                    val transOffset = getPointOffset(idx, pt.transformerForecast)
-
-                    if (idx == 0) {
-                        lstmPath.moveTo(lstmOffset.x, lstmOffset.y)
-                        gruPath.moveTo(gruOffset.x, gruOffset.y)
-                        transformerPath.moveTo(transOffset.x, transOffset.y)
-                    } else {
-                        lstmPath.lineTo(lstmOffset.x, lstmOffset.y)
-                        gruPath.lineTo(gruOffset.x, gruOffset.y)
-                        transformerPath.lineTo(transOffset.x, transOffset.y)
-                    }
-
-                    // Historical points
-                    pt.historicalDemand?.let { hist ->
-                        val histOffset = getPointOffset(idx, hist)
-                        if (idx == 0) {
-                            historicalPath.moveTo(histOffset.x, histOffset.y)
-                        } else {
-                            historicalPath.lineTo(histOffset.x, histOffset.y)
-                        }
-                    }
-                }
-
-                // Draw Historical
-                drawPath(
-                    path = historicalPath,
-                    color = SoftGrayText,
-                    style = Stroke(
-                        width = 2.dp.toPx(),
-                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
-                    )
-                )
-
-                // Draw LSTM Line
-                drawPath(
-                    path = lstmPath,
-                    color = CyberCobalt,
-                    style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round)
-                )
-
-                // Draw GRU Line
-                drawPath(
-                    path = gruPath,
-                    color = FutureViolet,
-                    style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
-                )
-
-                // Draw Transformer Line
-                drawPath(
-                    path = transformerPath,
-                    color = NeonEmerald,
-                    style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
-                )
+                drawGridLinesAndMetrics(texMeasurer, minVal, valRange, paddingLeft, paddingRight, paddingBottom, chartHeight)
+                drawXLabels(texMeasurer, points, paddingLeft, paddingBottom, stepX)
+                drawConfidenceInterval(points, ::getPointOffset)
+                drawPredictionLines(points, ::getPointOffset)
             }
         }
     }
+}
+
+private fun DrawScope.drawGridLinesAndMetrics(
+    texMeasurer: androidx.compose.ui.text.TextMeasurer,
+    minVal: Double,
+    valRange: Double,
+    paddingLeft: Float,
+    paddingRight: Float,
+    paddingBottom: Float,
+    chartHeight: Float
+) {
+    val gridCount = 4
+    for (i in 0..gridCount) {
+        val ratio = i.toFloat() / gridCount
+        val y = size.height - paddingBottom - (ratio * chartHeight)
+        val valueRepr = minVal + (ratio * valRange)
+
+        // Draw line
+        drawLine(
+            color = SolidGrayCard.copy(alpha = 0.45f),
+            start = Offset(paddingLeft, y),
+            end = Offset(size.width - paddingRight, y),
+            strokeWidth = 1.dp.toPx()
+        )
+
+        // Draw label
+        drawText(
+            textMeasurer = texMeasurer,
+            text = "$${String.format("%.0f", valueRepr / 1000)}k",
+            style = TextStyle(color = SoftGrayText, fontSize = 9.sp),
+            topLeft = Offset(5.dp.toPx(), y - 7.dp.toPx())
+        )
+    }
+}
+
+private fun DrawScope.drawXLabels(
+    texMeasurer: androidx.compose.ui.text.TextMeasurer,
+    points: List<DemandForecastPoint>,
+    paddingLeft: Float,
+    paddingBottom: Float,
+    stepX: Float
+) {
+    points.forEachIndexed { idx, point ->
+        val x = paddingLeft + (idx * stepX)
+
+        // Period title text format Month 1 -> M1
+        val labelText = point.period.replace("Month ", "M")
+
+        if (idx % 2 == 0 || idx == points.size - 1) {
+            drawText(
+                textMeasurer = texMeasurer,
+                text = labelText,
+                style = TextStyle(color = SoftGrayText, fontSize = 9.sp),
+                topLeft = Offset(x - 6.dp.toPx(), size.height - paddingBottom + 5.dp.toPx())
+            )
+        }
+    }
+}
+
+private fun DrawScope.drawConfidenceInterval(
+    points: List<DemandForecastPoint>,
+    getPointOffset: (Int, Double) -> Offset
+) {
+    val pathInterval = Path()
+    // Top boundary (Confidence Max)
+    points.forEachIndexed { idx, pt ->
+        val offset = getPointOffset(idx, pt.confidenceIntervalMax)
+        if (idx == 0) pathInterval.moveTo(offset.x, offset.y) else pathInterval.lineTo(offset.x, offset.y)
+    }
+    // Bottom boundary (Confidence Min) backward
+    for (idx in points.indices.reversed()) {
+        val pt = points[idx]
+        val offset = getPointOffset(idx, pt.confidenceIntervalMin)
+        pathInterval.lineTo(offset.x, offset.y)
+    }
+    pathInterval.close()
+
+    drawPath(
+        path = pathInterval,
+        color = CyberCobalt.copy(alpha = 0.1f),
+        style = androidx.compose.ui.graphics.drawscope.Fill
+    )
+}
+
+private fun DrawScope.drawPredictionLines(
+    points: List<DemandForecastPoint>,
+    getPointOffset: (Int, Double) -> Offset
+) {
+    val lstmPath = Path()
+    val gruPath = Path()
+    val transformerPath = Path()
+    val historicalPath = Path()
+
+    points.forEachIndexed { idx, pt ->
+        val lstmOffset = getPointOffset(idx, pt.lstmForecast)
+        val gruOffset = getPointOffset(idx, pt.gruForecast)
+        val transOffset = getPointOffset(idx, pt.transformerForecast)
+
+        if (idx == 0) {
+            lstmPath.moveTo(lstmOffset.x, lstmOffset.y)
+            gruPath.moveTo(gruOffset.x, gruOffset.y)
+            transformerPath.moveTo(transOffset.x, transOffset.y)
+        } else {
+            lstmPath.lineTo(lstmOffset.x, lstmOffset.y)
+            gruPath.lineTo(gruOffset.x, gruOffset.y)
+            transformerPath.lineTo(transOffset.x, transOffset.y)
+        }
+
+        // Historical points
+        pt.historicalDemand?.let { hist ->
+            val histOffset = getPointOffset(idx, hist)
+            if (idx == 0) {
+                historicalPath.moveTo(histOffset.x, histOffset.y)
+            } else {
+                historicalPath.lineTo(histOffset.x, histOffset.y)
+            }
+        }
+    }
+
+    // Draw Historical
+    drawPath(
+        path = historicalPath,
+        color = SoftGrayText,
+        style = Stroke(
+            width = 2.dp.toPx(),
+            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+        )
+    )
+
+    // Draw LSTM Line
+    drawPath(
+        path = lstmPath,
+        color = CyberCobalt,
+        style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round)
+    )
+
+    // Draw GRU Line
+    drawPath(
+        path = gruPath,
+        color = FutureViolet,
+        style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
+    )
+
+    // Draw Transformer Line
+    drawPath(
+        path = transformerPath,
+        color = NeonEmerald,
+        style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
+    )
 }
 
 /**
@@ -255,7 +284,6 @@ fun CapitalOptimizationBar(
     }
 
     val totalCurrent = costs.sumOf { it.currentSpend }
-    val totalOptimized = costs.sumOf { it.optimizedSpend }
 
     Card(
         shape = RoundedCornerShape(16.dp),

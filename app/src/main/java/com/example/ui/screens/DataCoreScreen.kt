@@ -127,267 +127,75 @@ Heurist Aligners: ACTIVE"""
     ) {
         // Core Header
         item {
-            Text(
-                text = "Data Core Integration Pipeline",
-                style = MaterialTheme.typography.headlineSmall,
-                color = CyberCobalt,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Replace sample corporate data by loading raw csv worksheets or scanning unstructured financial files (Spreadsheets, PDFs, Word docs, Images). Our optical extraction engine standardizes the inputs automatically.",
-                style = MaterialTheme.typography.bodySmall,
-                color = SoftGrayText
-            )
+            CoreHeader()
         }
 
         // Operational credentials warning if Guest
         if (isGuest) {
             item {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = WasteCoral.copy(alpha = 0.15f)),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(Icons.Default.Lock, contentDescription = null, tint = WasteCoral)
-                        Column {
-                            Text(
-                                "Read-Only Compliance Mode Active",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = WasteCoral,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                "You are currently logged in with a GUEST reviewer key. Role-Based Access Control has locked pipeline modifications. Change roles under the Help Hub tab to write changes.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.White
-                            )
-                        }
-                    }
-                }
+                GuestWarning()
             }
         }
 
         // Active Validation Rules Checklist
         item {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = IceBlueCard),
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            "Interactive OCR Alignment Rules",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = NeonEmerald, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Active Schema Validated", fontSize = 11.sp, color = NeonEmerald)
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(10.dp))
-                    
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        SchemaPill(column = "Department", mapped = true)
-                        SchemaPill(column = "CurrentSpend", mapped = true)
-                        SchemaPill(column = "OptimizedSpend", mapped = true)
-                    }
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        SchemaPill(column = "Category", mapped = true, optional = true)
-                        SchemaPill(column = "LeakExplanation", mapped = true, optional = true)
-                    }
-                }
-            }
+            ValidationRulesChecklist()
         }
 
         // Format Selector Tabs
         item {
-            Text(
-                text = "Select Data Format or OCR Target Source",
-                style = MaterialTheme.typography.titleSmall,
-                color = Color.White,
-                fontWeight = FontWeight.Bold
+            FormatSelector(
+                formatsList = formatsList,
+                activeFormatIndex = activeFormatIndex,
+                onFormatSelected = { activeFormatIndex = it }
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                formatsList.forEachIndexed { i, fmt ->
-                    val isSelected = activeFormatIndex == i
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                if (isSelected) CyberCobalt.copy(alpha = 0.2f) else SolidGrayCard,
-                                RoundedCornerShape(12.dp)
-                            )
-                            .clickable { activeFormatIndex = i }
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Icon(
-                                imageVector = fmt.third,
-                                contentDescription = null,
-                                tint = if (isSelected) CyberCobalt else SoftGrayText,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Text(
-                                text = fmt.second,
-                                fontSize = 11.sp,
-                                color = if (isSelected) CyberCobalt else Color.White,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                            )
-                        }
-                    }
-                }
-            }
         }
 
         // Simulated File Pickers
         item {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = IceBlueCard.copy(alpha = 0.4f)),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Icon(
-                            imageVector = formatsList[activeFormatIndex].third,
-                            contentDescription = null,
-                            tint = NeonEmerald,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Column {
-                            Text(
-                                "Simulated Active Attachment",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = SoftGrayText
-                            )
-                            Text(
-                                text = loadedFileName,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold
-                            )
+            SimulatedFilePicker(
+                activeFormatIndex = activeFormatIndex,
+                formatsList = formatsList,
+                loadedFileName = loadedFileName,
+                onSimulatePickFile = {
+                    when (activeFormatIndex) {
+                        0 -> {
+                            manualInputText = spreadsheetPreset
+                            loadedFileName = "Global_Opex_Report.xlsx"
                         }
-                    }
-
-                    // Simulated Device File Drag Drop Trigger
-                    Button(
-                        onClick = {
-                            // Loop files
-                            when (activeFormatIndex) {
-                                0 -> {
-                                    manualInputText = spreadsheetPreset
-                                    loadedFileName = "Global_Opex_Report.xlsx"
-                                }
-                                1 -> {
-                                    manualInputText = pdfPreset
-                                    loadedFileName = "Vendor_Licensing_Invoice.pdf"
-                                }
-                                2 -> {
-                                    manualInputText = docxPreset
-                                    loadedFileName = "Operational_Restructure_Plan.docx"
-                                }
-                                3 -> {
-                                    manualInputText = imagePreset
-                                    loadedFileName = "Receipt_Retail_Outbox_OCR.jpg"
-                                }
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = SolidGrayCard),
-                        shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(12.dp), tint = Color.White)
-                            Text("Simulate Pick File", fontSize = 10.sp, color = Color.White)
+                        1 -> {
+                            manualInputText = pdfPreset
+                            loadedFileName = "Vendor_Licensing_Invoice.pdf"
+                        }
+                        2 -> {
+                            manualInputText = docxPreset
+                            loadedFileName = "Operational_Restructure_Plan.docx"
+                        }
+                        3 -> {
+                            manualInputText = imagePreset
+                            loadedFileName = "Receipt_Retail_Outbox_OCR.jpg"
                         }
                     }
                 }
-            }
+            )
         }
 
         // Custom OCR & Data Edit Console
         item {
-            Column {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Customize Unstructured Document Text",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Source Edit Console",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = SoftGrayText
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = manualInputText,
-                    onValueChange = { if (!isGuest) manualInputText = it },
-                    label = { Text("OCR File Text Stream Preview") },
-                    placeholder = { Text("Enter tabular or unformatted rows listing departments and outlay figures.") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .testTag("unstructured_data_text_field"),
-                    readOnly = isGuest,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = CyberCobalt,
-                        unfocusedBorderColor = SolidGrayCard,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedLabelColor = CyberCobalt,
-                        unfocusedLabelColor = SoftGrayText,
-                        disabledBorderColor = SolidGrayCard.copy(alpha = 0.5f)
-                    )
-                )
-            }
+            OcrEditConsole(
+                manualInputText = manualInputText,
+                onManualInputTextChanged = { if (!isGuest) manualInputText = it },
+                isGuest = isGuest
+            )
         }
 
         // Parse Action Button (with animated processing states)
         item {
-            Button(
-                onClick = {
+            ParseActionButton(
+                isExtracting = isExtracting,
+                isGuest = isGuest,
+                extractionStatus = extractionStatus,
+                onExtractClicked = {
                     if (!isGuest) {
                         viewModel.importDocumentData(
                             format = formatsList[activeFormatIndex].second,
@@ -395,97 +203,17 @@ Heurist Aligners: ACTIVE"""
                             content = manualInputText
                         )
                     }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("import_file_format_button"),
-                enabled = !isExtracting && !isGuest,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = CyberCobalt,
-                    contentColor = Color.White,
-                    disabledContainerColor = CyberCobalt.copy(alpha = 0.5f)
-                ),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                if (isExtracting) {
-                    CircularProgressIndicator(modifier = Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = extractionStatus ?: "De-serializing file matrices...", color = Color.White)
-                } else {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Icon(Icons.Default.Send, contentDescription = null, tint = Color.White)
-                        Text("Extract & Core Sync Workspace", color = Color.White, fontWeight = FontWeight.Bold)
-                    }
                 }
-            }
+            )
         }
 
         // Live Operational Reporting Outputs (Success / Error diagnostics)
         item {
-            AnimatedContent(
-                targetState = Triple(importError, importSuccess, report),
-                transitionSpec = { fadeIn() togetherWith fadeOut() }
-            ) { (err, scc, rep) ->
-                Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    if (err != null) {
-                        Card(
-                            colors = CardDefaults.cardColors(containerColor = WasteCoral.copy(alpha = 0.15f)),
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(14.dp),
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(Icons.Default.Warning, contentDescription = null, tint = WasteCoral)
-                                Column {
-                                    Text("Extraction & Parsing Defect", style = MaterialTheme.typography.bodyMedium, color = WasteCoral, fontWeight = FontWeight.Bold)
-                                    Text(err, style = MaterialTheme.typography.bodySmall, color = Color.White)
-                                }
-                            }
-                        }
-                    }
-
-                    if (scc != null) {
-                        Card(
-                            colors = CardDefaults.cardColors(containerColor = NeonEmerald.copy(alpha = 0.15f)),
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(14.dp),
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(Icons.Default.Check, contentDescription = null, tint = NeonEmerald)
-                                Column {
-                                    Text("Pipeline Parsing Restructure Completed", style = MaterialTheme.typography.bodyMedium, color = NeonEmerald, fontWeight = FontWeight.Bold)
-                                    Text(scc, style = MaterialTheme.typography.bodySmall, color = Color.White)
-                                }
-                            }
-                        }
-                    }
-
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = IceBlueCard.copy(alpha = 0.3f)),
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Text(
-                                "CURRENT SYNCED LEDGER SCHEMAS",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = SoftGrayText,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text("Dataset Name: ${rep.reportName}", style = MaterialTheme.typography.bodySmall, color = Color.White)
-                            Text("Active Model Array Records: ${rep.costs.size} items", style = MaterialTheme.typography.bodySmall, color = Color.White)
-                        }
-                    }
-                }
-            }
+            OperationalReportingOutputs(
+                importError = importError,
+                importSuccess = importSuccess,
+                report = report
+            )
         }
     }
 }
@@ -512,6 +240,363 @@ fun SchemaPill(column: String, mapped: Boolean, optional: Boolean = false) {
                 fontSize = 11.sp,
                 color = if (mapped) NeonEmerald else SoftGrayText
             )
+        }
+    }
+}
+
+@Composable
+private fun CoreHeader() {
+    Text(
+        text = "Data Core Integration Pipeline",
+        style = MaterialTheme.typography.headlineSmall,
+        color = CyberCobalt,
+        fontWeight = FontWeight.Bold
+    )
+    Spacer(modifier = Modifier.height(4.dp))
+    Text(
+        text = "Replace sample corporate data by loading raw csv worksheets or scanning unstructured financial files (Spreadsheets, PDFs, Word docs, Images). Our optical extraction engine standardizes the inputs automatically.",
+        style = MaterialTheme.typography.bodySmall,
+        color = SoftGrayText
+    )
+}
+
+@Composable
+private fun GuestWarning() {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = WasteCoral.copy(alpha = 0.15f)),
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(Icons.Default.Lock, contentDescription = null, tint = WasteCoral)
+            Column {
+                Text(
+                    "Read-Only Compliance Mode Active",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = WasteCoral,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    "You are currently logged in with a GUEST reviewer key. Role-Based Access Control has locked pipeline modifications. Change roles under the Help Hub tab to write changes.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ValidationRulesChecklist() {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = IceBlueCard),
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Interactive OCR Alignment Rules",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = NeonEmerald, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Active Schema Validated", fontSize = 11.sp, color = NeonEmerald)
+                }
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                SchemaPill(column = "Department", mapped = true)
+                SchemaPill(column = "CurrentSpend", mapped = true)
+                SchemaPill(column = "OptimizedSpend", mapped = true)
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                SchemaPill(column = "Category", mapped = true, optional = true)
+                SchemaPill(column = "LeakExplanation", mapped = true, optional = true)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun FormatSelector(
+    formatsList: List<Triple<String, String, androidx.compose.ui.graphics.vector.ImageVector>>,
+    activeFormatIndex: Int,
+    onFormatSelected: (Int) -> Unit
+) {
+    Text(
+        text = "Select Data Format or OCR Target Source",
+        style = MaterialTheme.typography.titleSmall,
+        color = Color.White,
+        fontWeight = FontWeight.Bold
+    )
+    Spacer(modifier = Modifier.height(8.dp))
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        formatsList.forEachIndexed { i, fmt ->
+            val isSelected = activeFormatIndex == i
+            Box(
+                modifier = Modifier
+                    .background(
+                        if (isSelected) CyberCobalt.copy(alpha = 0.2f) else SolidGrayCard,
+                        RoundedCornerShape(12.dp)
+                    )
+                    .clickable { onFormatSelected(i) }
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = fmt.third,
+                        contentDescription = null,
+                        tint = if (isSelected) CyberCobalt else SoftGrayText,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = fmt.second,
+                        fontSize = 11.sp,
+                        color = if (isSelected) CyberCobalt else Color.White,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SimulatedFilePicker(
+    activeFormatIndex: Int,
+    formatsList: List<Triple<String, String, androidx.compose.ui.graphics.vector.ImageVector>>,
+    loadedFileName: String,
+    onSimulatePickFile: () -> Unit
+) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = IceBlueCard.copy(alpha = 0.4f)),
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Icon(
+                    imageVector = formatsList[activeFormatIndex].third,
+                    contentDescription = null,
+                    tint = NeonEmerald,
+                    modifier = Modifier.size(24.dp)
+                )
+                Column {
+                    Text(
+                        "Simulated Active Attachment",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = SoftGrayText
+                    )
+                    Text(
+                        text = loadedFileName,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            // Simulated Device File Drag Drop Trigger
+            Button(
+                onClick = onSimulatePickFile,
+                colors = ButtonDefaults.buttonColors(containerColor = SolidGrayCard),
+                shape = RoundedCornerShape(8.dp),
+                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(12.dp), tint = Color.White)
+                    Text("Simulate Pick File", fontSize = 10.sp, color = Color.White)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun OcrEditConsole(
+    manualInputText: String,
+    onManualInputTextChanged: (String) -> Unit,
+    isGuest: Boolean
+) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Customize Unstructured Document Text",
+                style = MaterialTheme.typography.titleSmall,
+                color = Color.White,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Source Edit Console",
+                style = MaterialTheme.typography.bodySmall,
+                color = SoftGrayText
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = manualInputText,
+            onValueChange = onManualInputTextChanged,
+            label = { Text("OCR File Text Stream Preview") },
+            placeholder = { Text("Enter tabular or unformatted rows listing departments and outlay figures.") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .testTag("unstructured_data_text_field"),
+            readOnly = isGuest,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = CyberCobalt,
+                unfocusedBorderColor = SolidGrayCard,
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                focusedLabelColor = CyberCobalt,
+                unfocusedLabelColor = SoftGrayText,
+                disabledBorderColor = SolidGrayCard.copy(alpha = 0.5f)
+            )
+        )
+    }
+}
+
+@Composable
+private fun ParseActionButton(
+    isExtracting: Boolean,
+    isGuest: Boolean,
+    extractionStatus: String?,
+    onExtractClicked: () -> Unit
+) {
+    Button(
+        onClick = onExtractClicked,
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("import_file_format_button"),
+        enabled = !isExtracting && !isGuest,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = CyberCobalt,
+            contentColor = Color.White,
+            disabledContainerColor = CyberCobalt.copy(alpha = 0.5f)
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        if (isExtracting) {
+            CircularProgressIndicator(modifier = Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = extractionStatus ?: "De-serializing file matrices...", color = Color.White)
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Icon(Icons.Default.Send, contentDescription = null, tint = Color.White)
+                Text("Extract & Core Sync Workspace", color = Color.White, fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+}
+
+@Composable
+private fun OperationalReportingOutputs(
+    importError: String?,
+    importSuccess: String?,
+    report: com.example.data.FinancialReport
+) {
+    AnimatedContent(
+        targetState = Triple(importError, importSuccess, report),
+        transitionSpec = { fadeIn() togetherWith fadeOut() },
+        label = "report_anim"
+    ) { (err, scc, rep) ->
+        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            if (err != null) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = WasteCoral.copy(alpha = 0.15f)),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Warning, contentDescription = null, tint = WasteCoral)
+                        Column {
+                            Text("Extraction & Parsing Defect", style = MaterialTheme.typography.bodyMedium, color = WasteCoral, fontWeight = FontWeight.Bold)
+                            Text(err, style = MaterialTheme.typography.bodySmall, color = Color.White)
+                        }
+                    }
+                }
+            }
+
+            if (scc != null) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = NeonEmerald.copy(alpha = 0.15f)),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Check, contentDescription = null, tint = NeonEmerald)
+                        Column {
+                            Text("Pipeline Parsing Restructure Completed", style = MaterialTheme.typography.bodyMedium, color = NeonEmerald, fontWeight = FontWeight.Bold)
+                            Text(scc, style = MaterialTheme.typography.bodySmall, color = Color.White)
+                        }
+                    }
+                }
+            }
+
+            Card(
+                colors = CardDefaults.cardColors(containerColor = IceBlueCard.copy(alpha = 0.3f)),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        "CURRENT SYNCED LEDGER SCHEMAS",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = SoftGrayText,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text("Dataset Name: ${rep.reportName}", style = MaterialTheme.typography.bodySmall, color = Color.White)
+                    Text("Active Model Array Records: ${rep.costs.size} items", style = MaterialTheme.typography.bodySmall, color = Color.White)
+                }
+            }
         }
     }
 }

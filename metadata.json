@@ -1,0 +1,6 @@
+{
+  "name": "DeepOptima AI",
+  "description": "Comparative Deep Learning Analysis for Expense Optimization & Demand Forecasting with real-time financial dashboards, risk portfolio predictions, and secure team collaboration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

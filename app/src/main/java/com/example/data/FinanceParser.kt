@@ -188,14 +188,4 @@ object FinanceParser {
         return result
     }
 
-    // --- Standard Sample Datasets ---
-
-    const val SAMPLE_A_CORPORATE = """Department,CurrentSpend,OptimizedSpend,Category,LeakageExplanation
-Executive Travel,185000,120000,Travel,Over-reliance on premium private corporate airlines and unmanaged hotel selections.
-Tech Marketing,450000,320000,Marketing,Un-segmented social ads and high churn on unoptimized bidding keywords.
-Infrastructure SaaS,305000,210000,SaaS Software,Unused enterprise database licenses and over-provisioned idle cloud servers.
-Fulfillment Operations,890000,810000,Operations,Sub-optimal route dispatch and high manual packaging overheads.
-R&D Lab,120000,125000,R&D,Efficient - requires supplementary specialized development equipment.
-Administrative Support,95000,75000,Payroll,Redundant manual auditing workflow that can be securely vaporized with automated reporting.
-Global HR Outreach,140000,110000,Payroll,Scattered recruiting contracts with high third-party placement agency percentage overheads."""
 }

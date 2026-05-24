@@ -6,13 +6,9 @@ import android.util.Log
 import com.example.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
-import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.ResponseBody
 import retrofit2.Retrofit
 import retrofit2.http.Body
-import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Query
 import java.io.ByteArrayOutputStream

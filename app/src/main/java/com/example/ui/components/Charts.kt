@@ -285,7 +285,6 @@ fun CapitalOptimizationBar(
     }
 
     val totalCurrent = costs.sumOf { it.currentSpend }
-    val totalOptimized = costs.sumOf { it.optimizedSpend }
 
     Card(
         shape = RoundedCornerShape(16.dp),

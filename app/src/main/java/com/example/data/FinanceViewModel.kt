@@ -78,7 +78,7 @@ class FinanceViewModel : ViewModel() {
     fun formatCurrency(usdValue: Double): String {
         val converted = convertCurrency(usdValue)
         val symbol = getCurrencySymbol()
-        return "$symbol${String.format("%,.0f", converted)}"
+        return "$symbol${String.format("%,.2f", converted)}"
     }
 
     private val _isReportAnalyzing = MutableStateFlow(false)

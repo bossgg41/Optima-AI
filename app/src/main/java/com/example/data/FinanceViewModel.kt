@@ -78,7 +78,7 @@ class FinanceViewModel : ViewModel() {
     fun formatCurrency(usdValue: Double): String {
         val converted = convertCurrency(usdValue)
         val symbol = getCurrencySymbol()
-        return "$symbol${String.format("%,.0f", converted)}"
+        return "$symbol${String.format("%,.2f", converted)}"
     }
 
     private val _isReportAnalyzing = MutableStateFlow(false)
@@ -193,6 +193,10 @@ class FinanceViewModel : ViewModel() {
 
     // --- Business Functions ---
 
+    companion object {
+        private val departmentDelimiters = listOf(":", ",", "current", "spend", "target", "cur", "opt", "$")
+    }
+
     /**
      * Set the current role for Role-Based Access Control
      */
@@ -299,7 +303,7 @@ class FinanceViewModel : ViewModel() {
         }
     }
 
-    private fun heuristicExtract(format: String, text: String): ParserResult<List<DepartmentCost>> {
+    internal fun heuristicExtract(format: String, text: String): ParserResult<List<DepartmentCost>> {
         val formatClean = format.trim().lowercase()
         // If it's pure CSV text (or if we find commas structure), try direct parsing first
         if (formatClean == "xlsx/csv" || text.contains(",")) {
@@ -320,7 +324,7 @@ class FinanceViewModel : ViewModel() {
             // Replaces dollar signs, commas, or 'k' suffix for simple processing
             val cleanLine = line.replace("$", "").replace("k", "000").replace("K", "000")
             
-            val doubleValues = "\\d+[\\d,\\s]*\\.?\\d*".toRegex().findAll(cleanLine)
+            val doubleValues = "\\d+(?:[\\s,]+\\d+)*(?:\\.\\d+)?".toRegex().findAll(cleanLine)
                 .map { it.value.replace(" ", "").replace(",", "").toDoubleOrNull() }
                 .filterNotNull()
                 .toList()
@@ -330,7 +334,13 @@ class FinanceViewModel : ViewModel() {
                 val optimizedSpendVal = doubleValues[1]
                 
                 // Segment department from start of line up to first number or label separator
-                var departmentLabel = line.split(":", ",", "current", "spend", "target", "cur", "opt", "$")[0].trim()
+                val delimiterIdx = line.indexOfAny(departmentDelimiters)
+                var departmentLabel = if (delimiterIdx == -1) {
+                    line.trim()
+                } else {
+                    line.substring(0, delimiterIdx).trim()
+                }
+
                 if (departmentLabel.length > 35) {
                     departmentLabel = departmentLabel.take(35) + "..."
                 }
@@ -381,8 +391,6 @@ class FinanceViewModel : ViewModel() {
     fun loadPresetDataset(presetName: String) {
         val csvText = when (presetName) {
             "SaaS Corporate" -> FinanceParser.SAMPLE_A_CORPORATE
-            "Retail Supplier" -> FinanceParser.SAMPLE_B_RETAIL
-            "Biotech Lab" -> FinanceParser.SAMPLE_C_BIOTECH
             else -> FinanceParser.SAMPLE_A_CORPORATE
         }
         applyUploadedDataset(presetName, csvText)

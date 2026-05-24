@@ -11,6 +11,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class FinanceViewModel : ViewModel() {
+    companion object {
+        private val NUMBER_REGEX = "\\d+[\\d,\\s]*\\.?\\d*".toRegex()
+    }
 
     private val TAG = "FinanceViewModel"
 
@@ -319,7 +322,7 @@ class FinanceViewModel : ViewModel() {
             // Replaces dollar signs, commas, or 'k' suffix for simple processing
             val cleanLine = line.replace("$", "").replace("k", "000").replace("K", "000")
             
-            val doubleValues = "\\d+(?:[\\s,]+\\d+)*(?:\\.\\d+)?".toRegex().findAll(cleanLine)
+            val doubleValues = NUMBER_REGEX.findAll(cleanLine)
                 .map { it.value.replace(" ", "").replace(",", "").toDoubleOrNull() }
                 .filterNotNull()
                 .toList()

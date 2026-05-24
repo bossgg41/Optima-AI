@@ -320,7 +320,7 @@ class FinanceViewModel : ViewModel() {
             // Replaces dollar signs, commas, or 'k' suffix for simple processing
             val cleanLine = line.replace("$", "").replace("k", "000").replace("K", "000")
             
-            val doubleValues = "\\d+[\\d,\\s]*\\.?\\d*".toRegex().findAll(cleanLine)
+            val doubleValues = "\\d+(?:[\\s,]+\\d+)*(?:\\.\\d+)?".toRegex().findAll(cleanLine)
                 .map { it.value.replace(" ", "").replace(",", "").toDoubleOrNull() }
                 .filterNotNull()
                 .toList()

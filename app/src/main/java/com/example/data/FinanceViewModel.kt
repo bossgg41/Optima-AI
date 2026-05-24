@@ -391,8 +391,6 @@ class FinanceViewModel : ViewModel() {
     fun loadPresetDataset(presetName: String) {
         val csvText = when (presetName) {
             "SaaS Corporate" -> FinanceParser.SAMPLE_A_CORPORATE
-            "Retail Supplier" -> FinanceParser.SAMPLE_B_RETAIL
-            "Biotech Lab" -> FinanceParser.SAMPLE_C_BIOTECH
             else -> FinanceParser.SAMPLE_A_CORPORATE
         }
         applyUploadedDataset(presetName, csvText)

@@ -75,7 +75,7 @@ fun HelpScreen(
                     HelpCardStep(
                         index = "02",
                         title = "Upload/Paste Company Datasets",
-                        description = "Navigate to the 'Data Core' screen. Use our quick presets (SaaS, Retail, Biotech) or paste a custom expense ledger CSV. Press 'Apply & Parse' to replace the workspace constants reactively."
+                        description = "Navigate to the 'Data Core' screen. Use our quick preset or paste a custom expense ledger CSV. Press 'Apply & Parse' to replace the workspace constants reactively."
                     )
                 }
 

@@ -35,6 +35,12 @@ fun HelpScreen(
 
     var activeHelpTag by remember { mutableStateOf(0) } // 0: Help, 1: Algorithms, 2: RBAC settings, 3: PDF report
 
+    // Authorization Mock State
+    var targetRole by remember { mutableStateOf<UserRole?>(null) }
+    var showAuthDialog by remember { mutableStateOf(false) }
+    var authPassword by remember { mutableStateOf("") }
+    var authError by remember { mutableStateOf(false) }
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -164,7 +170,14 @@ fun HelpScreen(
                                             if (selected) CyberCobalt.copy(alpha = 0.15f) else androidx.compose.ui.graphics.Color.Transparent,
                                             RoundedCornerShape(8.dp)
                                         )
-                                        .clickable { viewModel.selectRole(role) }
+                                        .clickable {
+                                            if (role.ordinal < activeRole.ordinal) {
+                                                targetRole = role
+                                                showAuthDialog = true
+                                            } else {
+                                                viewModel.selectRole(role)
+                                            }
+                                        }
                                         .padding(12.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.SpaceBetween
@@ -175,7 +188,14 @@ fun HelpScreen(
                                     ) {
                                         RadioButton(
                                             selected = selected,
-                                            onClick = { viewModel.selectRole(role) },
+                                            onClick = {
+                                                if (role.ordinal < activeRole.ordinal) {
+                                                    targetRole = role
+                                                    showAuthDialog = true
+                                                } else {
+                                                    viewModel.selectRole(role)
+                                                }
+                                            },
                                             colors = RadioButtonDefaults.colors(selectedColor = CyberCobalt)
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
@@ -287,6 +307,64 @@ Generated on: 2026-05-23 (DeepOptima Executive Engine)
             }
         }
     }
+
+    if (showAuthDialog && targetRole != null) {
+        AlertDialog(
+            onDismissRequest = {
+                showAuthDialog = false
+                authPassword = ""
+                authError = false
+            },
+            title = { Text("Authentication Required", color = PureWhite) },
+            text = {
+                Column {
+                    Text("Upgrading to ${targetRole?.label} requires authorization.", color = SoftGrayText)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = authPassword,
+                        onValueChange = {
+                            authPassword = it
+                            authError = false
+                        },
+                        label = { Text("Enter Password (e.g., admin)", color = SoftGrayText) },
+                        isError = authError,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = PureWhite,
+                            unfocusedTextColor = PureWhite
+                        )
+                    )
+                    if (authError) {
+                        Text("Invalid password.", color = androidx.compose.ui.graphics.Color.Red, style = MaterialTheme.typography.labelSmall)
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (authPassword == "admin") {
+                        viewModel.selectRole(targetRole!!)
+                        showAuthDialog = false
+                        authPassword = ""
+                        authError = false
+                    } else {
+                        authError = true
+                    }
+                }) {
+                    Text("Confirm", color = CyberCobalt)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showAuthDialog = false
+                    authPassword = ""
+                    authError = false
+                }) {
+                    Text("Cancel", color = SoftGrayText)
+                }
+            },
+            containerColor = SpaceDarkBg
+        )
+    }
+
 }
 
 @Composable

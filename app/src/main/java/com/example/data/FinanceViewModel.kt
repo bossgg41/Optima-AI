@@ -92,12 +92,8 @@ Global HR Outreach,140000,110000,Payroll,Scattered recruiting contracts with hig
     fun formatCurrency(usdValue: Double): String {
         val converted = convertCurrency(usdValue)
         val symbol = getCurrencySymbol()
-        // Format without decimals for whole numbers, else with 2 decimals
-        return if (converted % 1.0 == 0.0) {
-            "$symbol${String.format("%,.0f", converted)}"
-        } else {
-            "$symbol${String.format("%,.2f", converted)}"
-        }
+        val formatted = String.format("%,.2f", converted)
+        return if (formatted.endsWith(".00")) "$symbol${formatted.dropLast(3)}" else "$symbol$formatted"
     }
 
     private val _isReportAnalyzing = MutableStateFlow(false)
@@ -211,6 +207,8 @@ Global HR Outreach,140000,110000,Payroll,Scattered recruiting contracts with hig
     }
 
     // --- Business Functions ---
+
+    private val departmentDelimiters = listOf(":", ",", "current", "spend", "target", "cur", "opt", "$")
 
     /**
      * Set the current role for Role-Based Access Control

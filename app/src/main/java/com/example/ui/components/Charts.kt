@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -79,6 +80,21 @@ fun ComparativeForecastChart(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            val maxVal = remember(points) {
+                var currentMax = 0.0
+                for (point in points) {
+                    currentMax = maxOf(
+                        currentMax,
+                        point.lstmForecast,
+                        point.gruForecast,
+                        point.transformerForecast,
+                        point.historicalDemand ?: 0.0,
+                        point.confidenceIntervalMax
+                    )
+                }
+                if (currentMax > 0.0) currentMax else 100.0
+            }
+
             // Canvas drawing
             Canvas(
                 modifier = Modifier
@@ -98,9 +114,6 @@ fun ComparativeForecastChart(
                 val chartHeight = height - paddingTop - paddingBottom
 
                 // Math bounds
-                val maxVal = points.flatMap { 
-                    listOf(it.lstmForecast, it.gruForecast, it.transformerForecast, it.historicalDemand ?: 0.0, it.confidenceIntervalMax)
-                }.maxOrNull() ?: 100.0
                 val minVal = 0.0 // Baseline floor
                 val valRange = maxVal - minVal
 

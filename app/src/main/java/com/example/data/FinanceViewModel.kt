@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 class FinanceViewModel : ViewModel() {
     companion object {
         private val NUMBER_REGEX = "\\d+[\\d,\\s]*\\.?\\d*".toRegex()
+        private val departmentDelimiters = listOf(":", ",", "current", "spend", "target", "cur", "opt", "$")
     }
 
     private val TAG = "FinanceViewModel"
@@ -38,9 +39,6 @@ Global HR Outreach,140000,110000,Payroll,Scattered recruiting contracts with hig
                 }
             },
             forecasts = emptyList() // Will be computed on launch
-            reportName = "Empty Report",
-            costs = emptyList(),
-            forecasts = emptyList()
         )
     )
     val activeReport: StateFlow<FinancialReport> = _activeReport.asStateFlow()
@@ -94,7 +92,12 @@ Global HR Outreach,140000,110000,Payroll,Scattered recruiting contracts with hig
     fun formatCurrency(usdValue: Double): String {
         val converted = convertCurrency(usdValue)
         val symbol = getCurrencySymbol()
-        return "$symbol${String.format("%,.2f", converted)}"
+        // Format without decimals for whole numbers, else with 2 decimals
+        return if (converted % 1.0 == 0.0) {
+            "$symbol${String.format("%,.0f", converted)}"
+        } else {
+            "$symbol${String.format("%,.2f", converted)}"
+        }
     }
 
     private val _isReportAnalyzing = MutableStateFlow(false)
@@ -208,10 +211,6 @@ Global HR Outreach,140000,110000,Payroll,Scattered recruiting contracts with hig
     }
 
     // --- Business Functions ---
-
-    companion object {
-        private val departmentDelimiters = listOf(":", ",", "current", "spend", "target", "cur", "opt", "$")
-    }
 
     /**
      * Set the current role for Role-Based Access Control

@@ -344,58 +344,93 @@ fun LazyListScope.tradingPortfolioTab(
     }
 
     // Trading Shares list representation
-    items(userStocks) { stock ->
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = IceBlueCard)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+    if (userStocks.isEmpty()) {
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                colors = CardDefaults.cardColors(containerColor = IceBlueCard.copy(alpha = 0.6f)),
+                shape = RoundedCornerShape(12.dp)
             ) {
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .background(
-                                    if (stock.primaryExchange == "Crypto") FutureViolet.copy(alpha = 0.2f) else CyberCobalt.copy(alpha = 0.2f),
-                                    RoundedCornerShape(4.dp)
-                                )
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Text(stock.ticker, style = MaterialTheme.typography.labelMedium, color = if (stock.primaryExchange == "Crypto") FutureViolet else CyberCobalt)
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stock.companyName, style = MaterialTheme.typography.bodyMedium, color = PureWhite)
-                    }
+                Column(
+                    modifier = Modifier.padding(24.dp).fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        tint = SoftGrayText,
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "No Active Assets",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = PureWhite
+                    )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "${stock.shares} units | Purchase avg: $${stock.avgBuyPrice} | Current: $${stock.currentPrice} on ${stock.primaryExchange}",
+                        text = "Your trading portfolio is currently empty. Add an asset to begin forecasting.",
                         style = MaterialTheme.typography.bodySmall,
-                        color = SoftGrayText
+                        color = SoftGrayText,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                 }
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(horizontalAlignment = Alignment.End) {
+            }
+        }
+    } else {
+        items(userStocks) { stock ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = IceBlueCard)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .background(
+                                        if (stock.primaryExchange == "Crypto") FutureViolet.copy(alpha = 0.2f) else CyberCobalt.copy(alpha = 0.2f),
+                                        RoundedCornerShape(4.dp)
+                                    )
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(stock.ticker, style = MaterialTheme.typography.labelMedium, color = if (stock.primaryExchange == "Crypto") FutureViolet else CyberCobalt)
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(stock.companyName, style = MaterialTheme.typography.bodyMedium, color = PureWhite)
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "$${String.format("%,.2f", stock.marketValue)}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = PureWhite
-                        )
-                        Text(
-                            text = if (stock.profitLoss >= 0) "+$${String.format("%.2f", stock.profitLoss)} (${String.format("%.1f", stock.profitLossPercentage)}%)"
-                                   else "-$${String.format("%.2f", -stock.profitLoss)} (${String.format("%.1f", stock.profitLossPercentage)}%)",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (stock.profitLoss >= 0) NeonEmerald else WasteCoral
+                            text = "${stock.shares} units | Purchase avg: $${stock.avgBuyPrice} | Current: $${stock.currentPrice} on ${stock.primaryExchange}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = SoftGrayText
                         )
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    IconButton(onClick = { viewModel.deleteStock(stock.ticker) }) {
-                        Icon(Icons.Default.Close, contentDescription = "Delete", tint = WasteCoral.copy(alpha = 0.7f))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                text = "$${String.format("%,.2f", stock.marketValue)}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = PureWhite
+                            )
+                            Text(
+                                text = if (stock.profitLoss >= 0) "+$${String.format("%.2f", stock.profitLoss)} (${String.format("%.1f", stock.profitLossPercentage)}%)"
+                                       else "-$${String.format("%.2f", -stock.profitLoss)} (${String.format("%.1f", stock.profitLossPercentage)}%)",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (stock.profitLoss >= 0) NeonEmerald else WasteCoral
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        IconButton(onClick = { viewModel.deleteStock(stock.ticker) }) {
+                            Icon(Icons.Default.Close, contentDescription = "Delete", tint = WasteCoral.copy(alpha = 0.7f))
+                        }
                     }
                 }
             }

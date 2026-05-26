@@ -38,9 +38,6 @@ Global HR Outreach,140000,110000,Payroll,Scattered recruiting contracts with hig
                 }
             },
             forecasts = emptyList() // Will be computed on launch
-            reportName = "Empty Report",
-            costs = emptyList(),
-            forecasts = emptyList()
         )
     )
     val activeReport: StateFlow<FinancialReport> = _activeReport.asStateFlow()
@@ -94,7 +91,8 @@ Global HR Outreach,140000,110000,Payroll,Scattered recruiting contracts with hig
     fun formatCurrency(usdValue: Double): String {
         val converted = convertCurrency(usdValue)
         val symbol = getCurrencySymbol()
-        return "$symbol${String.format("%,.2f", converted)}"
+        val formatted = String.format("%,.2f", converted)
+        return if (formatted.endsWith(".00")) "$symbol${formatted.dropLast(3)}" else "$symbol$formatted"
     }
 
     private val _isReportAnalyzing = MutableStateFlow(false)
@@ -209,9 +207,7 @@ Global HR Outreach,140000,110000,Payroll,Scattered recruiting contracts with hig
 
     // --- Business Functions ---
 
-    companion object {
-        private val departmentDelimiters = listOf(":", ",", "current", "spend", "target", "cur", "opt", "$")
-    }
+    private val departmentDelimiters = listOf(":", ",", "current", "spend", "target", "cur", "opt", "$")
 
     /**
      * Set the current role for Role-Based Access Control

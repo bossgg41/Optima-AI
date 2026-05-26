@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 class FinanceViewModel : ViewModel() {
     companion object {
         private val NUMBER_REGEX = "\\d+[\\d,\\s]*\\.?\\d*".toRegex()
+        private val departmentDelimiters = listOf(":", ",", "current", "spend", "target", "cur", "opt", "$")
     }
 
     private val TAG = "FinanceViewModel"

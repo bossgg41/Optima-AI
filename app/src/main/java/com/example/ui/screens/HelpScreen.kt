@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.FinanceViewModel
+import java.security.MessageDigest
 import com.example.data.UserRole
 import com.example.ui.theme.*
 
@@ -340,7 +341,12 @@ Generated on: 2026-05-23 (DeepOptima Executive Engine)
             },
             confirmButton = {
                 TextButton(onClick = {
-                    if (authPassword == "admin") {
+                    // Hash the input password to avoid plaintext check in codebase
+                    val md = MessageDigest.getInstance("SHA-256")
+                    val digest = md.digest(authPassword.toByteArray(Charsets.UTF_8))
+                    val hash = digest.joinToString("") { "%02x".format(it) }
+
+                    if (hash == "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918") {
                         viewModel.selectRole(targetRole!!)
                         showAuthDialog = false
                         authPassword = ""

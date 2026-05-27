@@ -95,6 +95,15 @@ fun ComparativeForecastChart(
                 if (currentMax > 0.0) currentMax else 100.0
             }
 
+    // ⚡ Bolt: Hoist Path objects and PathEffect outside of the Canvas drawing phase
+    // to prevent allocations and GC thrashing on every frame draw.
+    val pathInterval = remember { Path() }
+    val lstmPath = remember { Path() }
+    val gruPath = remember { Path() }
+    val transformerPath = remember { Path() }
+    val historicalPath = remember { Path() }
+    val dashedPathEffect = remember { PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f) }
+
             // Canvas drawing
             Canvas(
                 modifier = Modifier
@@ -128,8 +137,8 @@ fun ComparativeForecastChart(
 
                 drawGridLinesAndMetrics(texMeasurer, minVal, valRange, paddingLeft, paddingRight, paddingBottom, chartHeight)
                 drawXLabels(texMeasurer, points, paddingLeft, paddingBottom, stepX)
-                drawConfidenceInterval(points, ::getPointOffset)
-                drawPredictionLines(points, ::getPointOffset)
+        drawConfidenceInterval(points, pathInterval, ::getPointOffset)
+        drawPredictionLines(points, lstmPath, gruPath, transformerPath, historicalPath, dashedPathEffect, ::getPointOffset)
             }
         }
     }
@@ -194,9 +203,10 @@ private fun DrawScope.drawXLabels(
 
 private fun DrawScope.drawConfidenceInterval(
     points: List<DemandForecastPoint>,
+    pathInterval: Path,
     getPointOffset: (Int, Double) -> Offset
 ) {
-    val pathInterval = Path()
+    pathInterval.reset() // ⚡ Bolt: Resetting hoisted path prevents reallocation
     // Top boundary (Confidence Max)
     points.forEachIndexed { idx, pt ->
         val offset = getPointOffset(idx, pt.confidenceIntervalMax)
@@ -219,12 +229,18 @@ private fun DrawScope.drawConfidenceInterval(
 
 private fun DrawScope.drawPredictionLines(
     points: List<DemandForecastPoint>,
+    lstmPath: Path,
+    gruPath: Path,
+    transformerPath: Path,
+    historicalPath: Path,
+    dashedPathEffect: PathEffect,
     getPointOffset: (Int, Double) -> Offset
 ) {
-    val lstmPath = Path()
-    val gruPath = Path()
-    val transformerPath = Path()
-    val historicalPath = Path()
+    // ⚡ Bolt: Reset hoisted paths before reusing them in the draw phase
+    lstmPath.reset()
+    gruPath.reset()
+    transformerPath.reset()
+    historicalPath.reset()
 
     points.forEachIndexed { idx, pt ->
         val lstmOffset = getPointOffset(idx, pt.lstmForecast)
@@ -258,7 +274,7 @@ private fun DrawScope.drawPredictionLines(
         color = SoftGrayText,
         style = Stroke(
             width = 2.dp.toPx(),
-            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+            pathEffect = dashedPathEffect
         )
     )
 
@@ -296,7 +312,8 @@ fun CapitalOptimizationBar(
         return
     }
 
-    val totalCurrent = costs.sumOf { it.currentSpend }
+    // ⚡ Bolt: Memoize the sum operation to prevent unnecessary O(n) calculations on every recomposition.
+    val totalCurrent = remember(costs) { costs.sumOf { it.currentSpend } }
 
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -404,6 +421,9 @@ fun LegendIndicator(
     isDashed: Boolean = false,
     isBlock: Boolean = false
 ) {
+    // ⚡ Bolt: Hoist PathEffect to avoid creating float arrays on every frame if drawn in canvas
+    val dashedPathEffect = remember { PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f) }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -421,7 +441,7 @@ fun LegendIndicator(
                     start = Offset(0f, size.height / 2),
                     end = Offset(size.width, size.height / 2),
                     strokeWidth = 2.dp.toPx(),
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
+                    pathEffect = dashedPathEffect
                 )
             }
         } else {

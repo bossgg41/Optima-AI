@@ -10,8 +10,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -70,20 +75,35 @@ fun ChatScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         // Chats messaging board
-        LazyColumn(
-            state = listState,
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            items(messages) { msg ->
-                val isAi = msg.sender.contains("AI") || msg.sender.contains("System")
-                
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = if (isAi) Arrangement.Start else Arrangement.End
-                ) {
+        if (messages.isEmpty() && !isChatLoading) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(Icons.Default.Email, contentDescription = null, tint = SoftGrayText, modifier = Modifier.size(48.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("No messages yet", style = MaterialTheme.typography.titleMedium, color = PureWhite)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text("Start a conversation with the AI Optimizer", style = MaterialTheme.typography.bodySmall, color = SoftGrayText)
+            }
+        } else {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                items(messages) { msg ->
+                    val isAi = msg.sender.contains("AI") || msg.sender.contains("System")
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = if (isAi) Arrangement.Start else Arrangement.End
+                    ) {
                     Card(
                         shape = RoundedCornerShape(
                             topStart = 12.dp,
@@ -113,32 +133,33 @@ fun ChatScreen(
                 }
             }
 
-            if (isChatLoading) {
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        Card(
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = IceBlueCard),
-                            modifier = Modifier.widthIn(max = 200.dp)
+                if (isChatLoading) {
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Start
                         ) {
-                            Row(
-                                modifier = Modifier.padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                            Card(
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(containerColor = IceBlueCard),
+                                modifier = Modifier.widthIn(max = 200.dp)
                             ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(16.dp),
-                                    color = NeonEmerald,
-                                    strokeWidth = 2.dp
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = "AI is computing audit...",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = SoftGrayText
-                                )
+                                Row(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(16.dp),
+                                        color = NeonEmerald,
+                                        strokeWidth = 2.dp
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "AI is computing audit...",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = SoftGrayText
+                                    )
+                                }
                             }
                         }
                     }
@@ -161,6 +182,16 @@ fun ChatScreen(
                 modifier = Modifier
                     .weight(1f)
                     .testTag("chat_input_text_field"),
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Sentences,
+                    imeAction = ImeAction.Send
+                ),
+                keyboardActions = KeyboardActions(onSend = {
+                    if (rawInputText.isNotBlank()) {
+                        viewModel.sendChatMessage(rawInputText)
+                        rawInputText = ""
+                    }
+                }),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = NeonEmerald,
                     unfocusedBorderColor = SolidGrayCard,

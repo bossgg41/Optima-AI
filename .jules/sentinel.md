@@ -1,0 +1,5 @@
+
+## 2025-02-21 - Fix Hardcoded Credential and Error Info Leakage
+**Vulnerability:** A hardcoded mock authentication password hash ("admin") was present in HelpScreen.kt, alongside multiple occurrences of sensitive error exceptions (e.message) being passed directly to the UI.
+**Learning:** Hardcoded secrets even if simulated in UI must be dynamically configurable. In Android, `secrets-gradle-plugin` can inject variables into `BuildConfig`, removing the need for hardcoded hashes in the repository. Also, directly surfacing API error `e.message` to Compose UI elements can leak okhttp interceptor paths or network configs. Furthermore, `Log.e()` usage requires `android.util.Log` import and local `TAG` definitions to avoid hallucinated compilation errors.
+**Prevention:** Instead of hardcoding tokens, use `BuildConfig.VAR_NAME` generated via `.env`. Additionally, validate that catch blocks display a safe static generic message to users, while pushing the actual exception solely to backend logs using a predefined valid `TAG` string.

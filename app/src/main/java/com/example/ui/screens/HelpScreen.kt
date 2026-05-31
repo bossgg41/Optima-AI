@@ -17,6 +17,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.FinanceViewModel
 import java.security.MessageDigest
@@ -328,6 +331,8 @@ Generated on: 2026-05-23 (DeepOptima Executive Engine)
                             authError = false
                         },
                         label = { Text("Enter Password (e.g., admin)", color = SoftGrayText) },
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         isError = authError,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = PureWhite,

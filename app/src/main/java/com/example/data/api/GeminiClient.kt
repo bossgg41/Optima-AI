@@ -101,7 +101,7 @@ object GeminiClient {
             }
         } catch (e: Exception) {
             Log.e(TAG, "Gemini request failed: ${e.message}", e)
-            "AI Service Error: ${e.message ?: "Unknown API response exception"}. Let me process this in offline local intelligence backup:\n\n${simulateGeminiFallback(prompt)}"
+            "AI Service Error. Let me process this in offline local intelligence backup:\n\n${simulateGeminiFallback(prompt)}"
         }
     }
 

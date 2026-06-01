@@ -332,7 +332,9 @@ Generated on: 2026-05-23 (DeepOptima Executive Engine)
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = PureWhite,
                             unfocusedTextColor = PureWhite
-                        )
+                        ),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Password),
+                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation()
                     )
                     if (authError) {
                         Text("Invalid password.", color = androidx.compose.ui.graphics.Color.Red, style = MaterialTheme.typography.labelSmall)
@@ -346,7 +348,7 @@ Generated on: 2026-05-23 (DeepOptima Executive Engine)
                     val digest = md.digest(authPassword.toByteArray(Charsets.UTF_8))
                     val hash = digest.joinToString("") { "%02x".format(it) }
 
-                    if (hash == "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918") {
+                    if (hash == com.example.BuildConfig.ADMIN_PASSWORD_HASH) {
                         viewModel.selectRole(targetRole!!)
                         showAuthDialog = false
                         authPassword = ""

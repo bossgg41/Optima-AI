@@ -31,9 +31,9 @@ class GeminiClientTest {
             // Trigger the function
             val result = GeminiClient.getAnalysis("test prompt")
 
-            // Verify that the result contains our mocked exception message, thus testing the error case
+            // Verify that the result contains the generic fallback message without leaking the exception, thus testing the secure error case
             assertTrue("Expected result to contain 'AI Service Error'", result.contains("AI Service Error"))
-            assertTrue("Expected result to contain 'Simulated API Error'", result.contains("Simulated API Error"))
+            assertTrue("Expected result to contain the generic processing error message", result.contains("A network or processing error occurred"))
             assertTrue("Expected result to fallback to local intelligence", result.contains("DeepOptima Quantitative Summary"))
 
         } finally {

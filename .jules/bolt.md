@@ -1,3 +1,6 @@
 ## 2024-05-24 - Canvas DrawScope Allocations
 **Learning:** Found heavy list allocations (`flatMap { listOf(...) }`) happening inside Compose `Canvas` `DrawScope` during `ComparativeForecastChart` rendering. Since `DrawScope` operations can run frequently, allocating objects here causes unnecessary GC pressure.
 **Action:** Always extract calculations that don't depend on the `DrawScope` size/context to variables outside the `Canvas`, using `remember` if they are derived from state, to avoid allocations during drawing.
+## 2024-06-02 - Hoist Path and PathEffect out of Compose Canvas DrawScope
+**Learning:** In Jetpack Compose, instantiating complex objects like `Path` and `PathEffect` inside the `Canvas` block (which executes in the `DrawScope` loop) leads to continuous object allocation on every frame re-draw. This causes significant Garbage Collection (GC) thrashing and performance degradation, specifically when drawing complex predictive charts or graphs.
+**Action:** Always hoist these objects outside of the `DrawScope` by using `remember { Path() }` and `remember { PathEffect... }`. Then, inside the drawing loop, reuse the instances by calling `.reset()` on the paths before rebuilding them.

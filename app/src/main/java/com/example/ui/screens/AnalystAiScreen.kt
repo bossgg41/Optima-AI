@@ -22,6 +22,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.FinanceViewModel
@@ -650,12 +653,14 @@ fun AddAssetDialog(
                     value = ticker,
                     onValueChange = { viewModel.stockTicker.value = it },
                     label = { Text("Ticker (e.g. BTC, AMZN, 7203)") },
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = CyberCobalt, unfocusedBorderColor = SolidGrayCard, focusedLabelColor = CyberCobalt, focusedTextColor = PureWhite, unfocusedTextColor = PureWhite)
                 )
                 OutlinedTextField(
                     value = compName,
                     onValueChange = { viewModel.stockCompany.value = it },
                     label = { Text("Company / Asset description") },
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = CyberCobalt, unfocusedBorderColor = SolidGrayCard, focusedLabelColor = CyberCobalt, focusedTextColor = PureWhite, unfocusedTextColor = PureWhite)
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -663,6 +668,7 @@ fun AddAssetDialog(
                         value = shares,
                         onValueChange = { viewModel.stockShares.value = it },
                         label = { Text("Shares") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.weight(1f),
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = CyberCobalt, unfocusedBorderColor = SolidGrayCard, focusedLabelColor = CyberCobalt, focusedTextColor = PureWhite, unfocusedTextColor = PureWhite)
                     )
@@ -670,6 +676,7 @@ fun AddAssetDialog(
                         value = buyPrice,
                         onValueChange = { viewModel.stockBuyPrice.value = it },
                         label = { Text("Buy Price ($)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.weight(1f),
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = CyberCobalt, unfocusedBorderColor = SolidGrayCard, focusedLabelColor = CyberCobalt, focusedTextColor = PureWhite, unfocusedTextColor = PureWhite)
                     )

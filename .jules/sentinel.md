@@ -1,0 +1,4 @@
+## 2024-05-23 - Add Password Masking to Authentication Input
+**Vulnerability:** The password input field in the RBAC Help Screen dialog (`HelpScreen.kt`) was implemented as a standard `OutlinedTextField` without input masking (`visualTransformation`) or correct keyboard type hints. This allowed passwords to be visible in plain text on the screen while the user typed.
+**Learning:** In Jetpack Compose, an `OutlinedTextField` defaults to plain text visibility. For secure inputs like passwords, we must explicitly apply `PasswordVisualTransformation()` and configure `KeyboardOptions` to avoid shoulder surfing risks and clear text retention in IME buffers.
+**Prevention:** Always verify that Compose input fields accepting sensitive information (passwords, PINs, keys) have `PasswordVisualTransformation` applied and use `KeyboardType.Password` to prompt secure keyboards.

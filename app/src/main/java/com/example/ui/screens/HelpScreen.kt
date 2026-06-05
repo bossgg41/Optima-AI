@@ -22,6 +22,9 @@ import com.example.data.FinanceViewModel
 import java.security.MessageDigest
 import com.example.data.UserRole
 import com.example.ui.theme.*
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -329,6 +332,8 @@ Generated on: 2026-05-23 (DeepOptima Executive Engine)
                         },
                         label = { Text("Enter Password (e.g., admin)", color = SoftGrayText) },
                         isError = authError,
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = PureWhite,
                             unfocusedTextColor = PureWhite

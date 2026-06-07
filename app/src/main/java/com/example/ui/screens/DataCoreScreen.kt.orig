@@ -32,7 +32,7 @@ fun DataCoreScreen(
     val importError by viewModel.importError.collectAsStateWithLifecycle()
     val importSuccess by viewModel.importSuccess.collectAsStateWithLifecycle()
     val activeRole by viewModel.activeRole.collectAsStateWithLifecycle()
-    
+
     // Ingest states
     val isExtracting by viewModel.isExtractingData.collectAsStateWithLifecycle()
     val extractionStatus by viewModel.extractionStatus.collectAsStateWithLifecycle()
@@ -482,9 +482,6 @@ private fun OcrEditConsole(
                 .height(180.dp)
                 .testTag("unstructured_data_text_field"),
             readOnly = isGuest,
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.Sentences
-            ),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = CyberCobalt,
                 unfocusedBorderColor = SolidGrayCard,

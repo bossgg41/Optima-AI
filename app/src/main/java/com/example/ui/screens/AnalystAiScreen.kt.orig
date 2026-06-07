@@ -650,9 +650,6 @@ fun AddAssetDialog(
                     value = ticker,
                     onValueChange = { viewModel.stockTicker.value = it },
                     label = { Text("Ticker (e.g. BTC, AMZN, 7203)") },
-                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                        capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.Characters
-                    ),
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = CyberCobalt, unfocusedBorderColor = SolidGrayCard, focusedLabelColor = CyberCobalt, focusedTextColor = PureWhite, unfocusedTextColor = PureWhite)
                 )
                 OutlinedTextField(
@@ -667,9 +664,6 @@ fun AddAssetDialog(
                         onValueChange = { viewModel.stockShares.value = it },
                         label = { Text("Shares") },
                         modifier = Modifier.weight(1f),
-                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
-                        ),
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = CyberCobalt, unfocusedBorderColor = SolidGrayCard, focusedLabelColor = CyberCobalt, focusedTextColor = PureWhite, unfocusedTextColor = PureWhite)
                     )
                     OutlinedTextField(
@@ -677,9 +671,6 @@ fun AddAssetDialog(
                         onValueChange = { viewModel.stockBuyPrice.value = it },
                         label = { Text("Buy Price ($)") },
                         modifier = Modifier.weight(1f),
-                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal
-                        ),
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = CyberCobalt, unfocusedBorderColor = SolidGrayCard, focusedLabelColor = CyberCobalt, focusedTextColor = PureWhite, unfocusedTextColor = PureWhite)
                     )
                 }

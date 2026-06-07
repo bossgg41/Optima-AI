@@ -95,9 +95,6 @@ fun ComparativeForecastChart(
                 if (currentMax > 0.0) currentMax else 100.0
             }
 
-            // Performance Optimization: Hoist allocations out of DrawScope
-            // Instantiating objects (like Path, PathEffect) during Compose DrawScope execution
-            // triggers heavy Garbage Collection (GC) thrashing. We `remember` them here and reuse.
             val pathInterval = remember { Path() }
             val lstmPath = remember { Path() }
             val gruPath = remember { Path() }
@@ -453,8 +450,6 @@ fun LegendIndicator(
     isDashed: Boolean = false,
     isBlock: Boolean = false
 ) {
-    // Performance Optimization: Hoist PathEffect allocation to prevent GC churn
-    // when drawing dashed lines in Canvas.
     val dashEffect = remember { PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f) }
 
     Row(

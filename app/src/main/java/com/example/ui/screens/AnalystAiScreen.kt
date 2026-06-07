@@ -650,6 +650,7 @@ fun AddAssetDialog(
                     value = ticker,
                     onValueChange = { viewModel.stockTicker.value = it },
                     label = { Text("Ticker (e.g. BTC, AMZN, 7203)") },
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.Characters),
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = CyberCobalt, unfocusedBorderColor = SolidGrayCard, focusedLabelColor = CyberCobalt, focusedTextColor = PureWhite, unfocusedTextColor = PureWhite)
                 )
                 OutlinedTextField(
@@ -663,6 +664,7 @@ fun AddAssetDialog(
                         value = shares,
                         onValueChange = { viewModel.stockShares.value = it },
                         label = { Text("Shares") },
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
                         modifier = Modifier.weight(1f),
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = CyberCobalt, unfocusedBorderColor = SolidGrayCard, focusedLabelColor = CyberCobalt, focusedTextColor = PureWhite, unfocusedTextColor = PureWhite)
                     )
@@ -670,6 +672,7 @@ fun AddAssetDialog(
                         value = buyPrice,
                         onValueChange = { viewModel.stockBuyPrice.value = it },
                         label = { Text("Buy Price ($)") },
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal),
                         modifier = Modifier.weight(1f),
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = CyberCobalt, unfocusedBorderColor = SolidGrayCard, focusedLabelColor = CyberCobalt, focusedTextColor = PureWhite, unfocusedTextColor = PureWhite)
                     )

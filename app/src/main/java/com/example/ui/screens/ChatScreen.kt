@@ -16,7 +16,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material.icons.filled.Info
 import com.example.data.FinanceViewModel
 import com.example.ui.theme.*
 
@@ -77,6 +82,41 @@ fun ChatScreen(
                 .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            if (messages.isEmpty() && !isChatLoading) {
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                        colors = CardDefaults.cardColors(containerColor = IceBlueCard.copy(alpha = 0.6f)),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(24.dp).fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null,
+                                tint = SoftGrayText,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "How can I help you optimize?",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = PureWhite
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Ask me to analyze your workplace expenses, provide a strategic forecast, or review active dataset anomalies.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = SoftGrayText,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            }
+
             items(messages) { msg ->
                 val isAi = msg.sender.contains("AI") || msg.sender.contains("System")
                 
@@ -166,6 +206,15 @@ fun ChatScreen(
                     unfocusedBorderColor = SolidGrayCard,
                     focusedTextColor = PureWhite,
                     unfocusedTextColor = PureWhite
+                ),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                keyboardActions = KeyboardActions(
+                    onSend = {
+                        if (rawInputText.isNotBlank()) {
+                            viewModel.sendChatMessage(rawInputText)
+                            rawInputText = ""
+                        }
+                    }
                 )
             )
 

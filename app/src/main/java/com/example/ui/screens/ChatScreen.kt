@@ -18,6 +18,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.FinanceViewModel
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
 import com.example.ui.theme.*
 
 @Composable
@@ -166,6 +169,15 @@ fun ChatScreen(
                     unfocusedBorderColor = SolidGrayCard,
                     focusedTextColor = PureWhite,
                     unfocusedTextColor = PureWhite
+                ),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                keyboardActions = KeyboardActions(
+                    onSend = {
+                        if (rawInputText.isNotBlank()) {
+                            viewModel.sendChatMessage(rawInputText)
+                            rawInputText = ""
+                        }
+                    }
                 )
             )
 

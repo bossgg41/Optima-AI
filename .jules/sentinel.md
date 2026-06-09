@@ -1,0 +1,4 @@
+## 2024-05-24 - Plaintext Password Exposure in Mock/Internal Auth Panels
+**Vulnerability:** Even internal or pseudo-authentication forms (like role switchers) without proper visual transformations expose entered passwords in plaintext to shoulder surfers or screen recordings. Also, omitting keyboard types enables predictive text caching of credentials on the device keyboard.
+**Learning:** Security theater applies to UI as well. Just because an authentication flow is "mocked" or "internal" does not mean UI inputs should bypass standard masking.
+**Prevention:** Always apply `visualTransformation = PasswordVisualTransformation()` and `keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)` to sensitive input fields (`TextField`, `OutlinedTextField`) in Jetpack Compose, regardless of the target backend.

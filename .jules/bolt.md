@@ -1,3 +1,6 @@
 ## 2024-05-24 - Canvas DrawScope Allocations
 **Learning:** Found heavy list allocations (`flatMap { listOf(...) }`) happening inside Compose `Canvas` `DrawScope` during `ComparativeForecastChart` rendering. Since `DrawScope` operations can run frequently, allocating objects here causes unnecessary GC pressure.
 **Action:** Always extract calculations that don't depend on the `DrawScope` size/context to variables outside the `Canvas`, using `remember` if they are derived from state, to avoid allocations during drawing.
+## 2024-06-10 - Path, PathEffect, and Offset allocations in Canvas DrawScope
+**Learning:** Found multiple allocations of `Path` and `PathEffect` objects happening iteratively and repetitively within the `DrawScope` of the `ComparativeForecastChart` Compose component. Furthermore, lambda functions like `getPointOffset` passed into the draw scopes cause `KFunction` allocations per frame. These repetitive allocations within the drawing phase can significantly increase GC thrashing.
+**Action:** Always hoist object allocations like `Path` and `PathEffect` out of the Compose `Canvas` block using `remember`. Instead of passing custom calculation functions into drawing routines (which creates KFunctions), execute the arithmetic directly inside the loop as primitive math, reducing KFunction and iterative object allocations.

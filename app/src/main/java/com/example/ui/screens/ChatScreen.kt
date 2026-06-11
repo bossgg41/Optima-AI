@@ -1,6 +1,9 @@
 package com.example.ui.screens
 
 import androidx.compose.animation.*
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -161,6 +164,15 @@ fun ChatScreen(
                 modifier = Modifier
                     .weight(1f)
                     .testTag("chat_input_text_field"),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                keyboardActions = KeyboardActions(
+                    onSend = {
+                        if (rawInputText.isNotBlank()) {
+                            viewModel.sendChatMessage(rawInputText)
+                            rawInputText = ""
+                        }
+                    }
+                ),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = NeonEmerald,
                     unfocusedBorderColor = SolidGrayCard,

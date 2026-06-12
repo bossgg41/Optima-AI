@@ -1,3 +1,6 @@
 ## 2024-05-20 - Implemented empty state for trading portfolio
 **Learning:** Checking for an empty list (`userStocks.isEmpty()`) and using a simple conditional in Compose to display an empty state is an effective way to improve the user experience when no data is present. I also tweaked the formatCurrency method to make the trailing .00 decimals cleaner when it ends exactly on the dot.
 **Action:** Always include empty states for sections dynamically populated with user data to provide better guidance.
+## 2024-05-24 - Chat Input Keyboard Actions & Empty States
+**Learning:** Providing an empty state in dynamic lists (like `LazyColumn`) improves navigation, while configuring `keyboardOptions` with `ImeAction.Send` and corresponding `keyboardActions` allows users to seamlessly trigger form actions from the software keyboard.
+**Action:** Ensure dynamic list components always handle empty states and input fields provide appropriate keyboard actions for their intended use.

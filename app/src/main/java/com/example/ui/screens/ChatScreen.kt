@@ -10,9 +10,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -161,6 +164,13 @@ fun ChatScreen(
                 modifier = Modifier
                     .weight(1f)
                     .testTag("chat_input_text_field"),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                keyboardActions = KeyboardActions(onSend = {
+                    if (rawInputText.isNotBlank()) {
+                        viewModel.sendChatMessage(rawInputText)
+                        rawInputText = ""
+                    }
+                }),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = NeonEmerald,
                     unfocusedBorderColor = SolidGrayCard,

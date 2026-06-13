@@ -444,7 +444,9 @@ Identify specific departmental inefficiencies. Graphically lay out where the los
                 val answer = GeminiClient.getAnalysis(prompt, bitmap = bitmap)
                 _reportAnalysisResponse.value = answer
             } catch (e: Exception) {
-                _reportAnalysisResponse.value = "System processing failure: ${e.message}"
+                // Log securely to prevent information leakage to the UI
+                Log.e(TAG, "Report analysis failed", e)
+                _reportAnalysisResponse.value = "System processing failure. Please try again later."
             } finally {
                 _isReportAnalyzing.value = false
             }
@@ -528,7 +530,9 @@ Tell me exactly WHICH stock to buy or sell, WHEN (timestamps), current market in
                 val results = GeminiClient.getAnalysis(prompt, systemInstruction = "You are an expert Wall Street algorithmic analyst and risk systems engineer.")
                 _portfolioAnalysisResponse.value = results
             } catch (e: Exception) {
-                _portfolioAnalysisResponse.value = "Market feed error: ${e.message}"
+                // Log securely to prevent information leakage to the UI
+                Log.e(TAG, "Portfolio analysis failed", e)
+                _portfolioAnalysisResponse.value = "Market feed error. Please try again later."
             } finally {
                 _isPortfolioAnalyzing.value = false
             }
@@ -573,7 +577,9 @@ Based on this complete financial workspace, answer user's question:
                 newUpdated.add(aiMsg)
                 _chatMessages.value = newUpdated
             } catch (e: Exception) {
-                val errMsg = ChatMessage(sender = "AI Assistant", content = "I had trouble linking to the deep learning models. Trace: ${e.message}")
+                // Log securely to prevent information leakage to the UI
+                Log.e(TAG, "Chat message processing failed", e)
+                val errMsg = ChatMessage(sender = "AI Assistant", content = "I had trouble linking to the deep learning models. Please try again.")
                 val newUpdated = _chatMessages.value.toMutableList()
                 newUpdated.add(errMsg)
                 _chatMessages.value = newUpdated

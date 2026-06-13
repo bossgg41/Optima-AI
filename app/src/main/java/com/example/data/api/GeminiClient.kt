@@ -100,8 +100,9 @@ object GeminiClient {
                 "Unable to generate response. The model returned a blank candidate structure."
             }
         } catch (e: Exception) {
+            // Log securely to prevent information leakage to the UI via the fallback string
             Log.e(TAG, "Gemini request failed: ${e.message}", e)
-            "AI Service Error: ${e.message ?: "Unknown API response exception"}. Let me process this in offline local intelligence backup:\n\n${simulateGeminiFallback(prompt)}"
+            "AI Service Error. Let me process this in offline local intelligence backup:\n\n${simulateGeminiFallback(prompt)}"
         }
     }
 

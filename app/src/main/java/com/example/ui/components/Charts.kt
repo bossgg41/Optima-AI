@@ -95,6 +95,14 @@ fun ComparativeForecastChart(
                 if (currentMax > 0.0) currentMax else 100.0
             }
 
+            // Hoisted Path and PathEffect instances for DrawScope performance
+            val pathInterval = remember { Path() }
+            val lstmPath = remember { Path() }
+            val gruPath = remember { Path() }
+            val transformerPath = remember { Path() }
+            val historicalPath = remember { Path() }
+            val historicalDashEffect = remember { PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f) }
+
             // Canvas drawing
             Canvas(
                 modifier = Modifier
@@ -119,17 +127,34 @@ fun ComparativeForecastChart(
 
                 val stepX = chartWidth / (points.size - 1)
 
-                // Helper map values to coordinates
-                fun getPointOffset(index: Int, rawValue: Double): Offset {
-                    val x = paddingLeft + (index * stepX)
-                    val y = height - paddingBottom - (((rawValue - minVal) / valRange).toFloat() * chartHeight)
-                    return Offset(x, y)
-                }
-
                 drawGridLinesAndMetrics(texMeasurer, minVal, valRange, paddingLeft, paddingRight, paddingBottom, chartHeight)
                 drawXLabels(texMeasurer, points, paddingLeft, paddingBottom, stepX)
-                drawConfidenceInterval(points, ::getPointOffset)
-                drawPredictionLines(points, ::getPointOffset)
+
+                drawConfidenceInterval(
+                    points = points,
+                    paddingLeft = paddingLeft,
+                    paddingBottom = paddingBottom,
+                    minVal = minVal,
+                    valRange = valRange,
+                    chartHeight = chartHeight,
+                    stepX = stepX,
+                    pathInterval = pathInterval
+                )
+
+                drawPredictionLines(
+                    points = points,
+                    paddingLeft = paddingLeft,
+                    paddingBottom = paddingBottom,
+                    minVal = minVal,
+                    valRange = valRange,
+                    chartHeight = chartHeight,
+                    stepX = stepX,
+                    lstmPath = lstmPath,
+                    gruPath = gruPath,
+                    transformerPath = transformerPath,
+                    historicalPath = historicalPath,
+                    historicalDashEffect = historicalDashEffect
+                )
             }
         }
     }
@@ -194,19 +219,32 @@ private fun DrawScope.drawXLabels(
 
 private fun DrawScope.drawConfidenceInterval(
     points: List<DemandForecastPoint>,
-    getPointOffset: (Int, Double) -> Offset
+    paddingLeft: Float,
+    paddingBottom: Float,
+    minVal: Double,
+    valRange: Double,
+    chartHeight: Float,
+    stepX: Float,
+    pathInterval: Path
 ) {
-    val pathInterval = Path()
+    pathInterval.reset()
+
+    // Helper to calculate X and Y coordinates inline
+    fun getX(index: Int): Float = paddingLeft + (index * stepX)
+    fun getY(rawValue: Double): Float = size.height - paddingBottom - (((rawValue - minVal) / valRange).toFloat() * chartHeight)
+
     // Top boundary (Confidence Max)
     points.forEachIndexed { idx, pt ->
-        val offset = getPointOffset(idx, pt.confidenceIntervalMax)
-        if (idx == 0) pathInterval.moveTo(offset.x, offset.y) else pathInterval.lineTo(offset.x, offset.y)
+        val x = getX(idx)
+        val y = getY(pt.confidenceIntervalMax)
+        if (idx == 0) pathInterval.moveTo(x, y) else pathInterval.lineTo(x, y)
     }
     // Bottom boundary (Confidence Min) backward
     for (idx in points.indices.reversed()) {
         val pt = points[idx]
-        val offset = getPointOffset(idx, pt.confidenceIntervalMin)
-        pathInterval.lineTo(offset.x, offset.y)
+        val x = getX(idx)
+        val y = getY(pt.confidenceIntervalMin)
+        pathInterval.lineTo(x, y)
     }
     pathInterval.close()
 
@@ -219,35 +257,50 @@ private fun DrawScope.drawConfidenceInterval(
 
 private fun DrawScope.drawPredictionLines(
     points: List<DemandForecastPoint>,
-    getPointOffset: (Int, Double) -> Offset
+    paddingLeft: Float,
+    paddingBottom: Float,
+    minVal: Double,
+    valRange: Double,
+    chartHeight: Float,
+    stepX: Float,
+    lstmPath: Path,
+    gruPath: Path,
+    transformerPath: Path,
+    historicalPath: Path,
+    historicalDashEffect: PathEffect
 ) {
-    val lstmPath = Path()
-    val gruPath = Path()
-    val transformerPath = Path()
-    val historicalPath = Path()
+    lstmPath.reset()
+    gruPath.reset()
+    transformerPath.reset()
+    historicalPath.reset()
+
+    // Helper to calculate X and Y coordinates inline
+    fun getX(index: Int): Float = paddingLeft + (index * stepX)
+    fun getY(rawValue: Double): Float = size.height - paddingBottom - (((rawValue - minVal) / valRange).toFloat() * chartHeight)
 
     points.forEachIndexed { idx, pt ->
-        val lstmOffset = getPointOffset(idx, pt.lstmForecast)
-        val gruOffset = getPointOffset(idx, pt.gruForecast)
-        val transOffset = getPointOffset(idx, pt.transformerForecast)
+        val x = getX(idx)
+        val lstmY = getY(pt.lstmForecast)
+        val gruY = getY(pt.gruForecast)
+        val transY = getY(pt.transformerForecast)
 
         if (idx == 0) {
-            lstmPath.moveTo(lstmOffset.x, lstmOffset.y)
-            gruPath.moveTo(gruOffset.x, gruOffset.y)
-            transformerPath.moveTo(transOffset.x, transOffset.y)
+            lstmPath.moveTo(x, lstmY)
+            gruPath.moveTo(x, gruY)
+            transformerPath.moveTo(x, transY)
         } else {
-            lstmPath.lineTo(lstmOffset.x, lstmOffset.y)
-            gruPath.lineTo(gruOffset.x, gruOffset.y)
-            transformerPath.lineTo(transOffset.x, transOffset.y)
+            lstmPath.lineTo(x, lstmY)
+            gruPath.lineTo(x, gruY)
+            transformerPath.lineTo(x, transY)
         }
 
         // Historical points
         pt.historicalDemand?.let { hist ->
-            val histOffset = getPointOffset(idx, hist)
+            val histY = getY(hist)
             if (idx == 0) {
-                historicalPath.moveTo(histOffset.x, histOffset.y)
+                historicalPath.moveTo(x, histY)
             } else {
-                historicalPath.lineTo(histOffset.x, histOffset.y)
+                historicalPath.lineTo(x, histY)
             }
         }
     }
@@ -258,7 +311,7 @@ private fun DrawScope.drawPredictionLines(
         color = SoftGrayText,
         style = Stroke(
             width = 2.dp.toPx(),
-            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+            pathEffect = historicalDashEffect
         )
     )
 
@@ -404,6 +457,10 @@ fun LegendIndicator(
     isDashed: Boolean = false,
     isBlock: Boolean = false
 ) {
+    val dashEffect = remember(isDashed) {
+        if (isDashed) PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f) else null
+    }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -421,7 +478,7 @@ fun LegendIndicator(
                     start = Offset(0f, size.height / 2),
                     end = Offset(size.width, size.height / 2),
                     strokeWidth = 2.dp.toPx(),
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
+                    pathEffect = dashEffect
                 )
             }
         } else {

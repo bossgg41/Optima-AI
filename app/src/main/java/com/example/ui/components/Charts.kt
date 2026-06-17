@@ -39,6 +39,14 @@ fun ComparativeForecastChart(
 
     val texMeasurer = rememberTextMeasurer()
 
+    // Pre-allocate paths to avoid GC thrashing in DrawScope
+    val confidencePath = remember { Path() }
+    val lstmPath = remember { Path() }
+    val gruPath = remember { Path() }
+    val transformerPath = remember { Path() }
+    val historicalPath = remember { Path() }
+    val dashedPathEffect = remember { PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f) }
+
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = IceBlueCard),
@@ -120,7 +128,7 @@ fun ComparativeForecastChart(
                 val stepX = chartWidth / (points.size - 1)
 
                 // Helper map values to coordinates
-                fun getPointOffset(index: Int, rawValue: Double): Offset {
+                fun getOffset(index: Int, rawValue: Double): Offset {
                     val x = paddingLeft + (index * stepX)
                     val y = height - paddingBottom - (((rawValue - minVal) / valRange).toFloat() * chartHeight)
                     return Offset(x, y)
@@ -128,8 +136,81 @@ fun ComparativeForecastChart(
 
                 drawGridLinesAndMetrics(texMeasurer, minVal, valRange, paddingLeft, paddingRight, paddingBottom, chartHeight)
                 drawXLabels(texMeasurer, points, paddingLeft, paddingBottom, stepX)
-                drawConfidenceInterval(points, ::getPointOffset)
-                drawPredictionLines(points, ::getPointOffset)
+
+                confidencePath.reset()
+                points.forEachIndexed { idx, pt ->
+                    val offset = getOffset(idx, pt.confidenceIntervalMax)
+                    if (idx == 0) confidencePath.moveTo(offset.x, offset.y) else confidencePath.lineTo(offset.x, offset.y)
+                }
+                for (idx in points.indices.reversed()) {
+                    val pt = points[idx]
+                    val offset = getOffset(idx, pt.confidenceIntervalMin)
+                    confidencePath.lineTo(offset.x, offset.y)
+                }
+                confidencePath.close()
+
+                drawPath(
+                    path = confidencePath,
+                    color = CyberCobalt.copy(alpha = 0.1f),
+                    style = androidx.compose.ui.graphics.drawscope.Fill
+                )
+
+                lstmPath.reset()
+                gruPath.reset()
+                transformerPath.reset()
+                historicalPath.reset()
+
+                points.forEachIndexed { idx, pt ->
+                    val lstmOffset = getOffset(idx, pt.lstmForecast)
+                    val gruOffset = getOffset(idx, pt.gruForecast)
+                    val transOffset = getOffset(idx, pt.transformerForecast)
+
+                    if (idx == 0) {
+                        lstmPath.moveTo(lstmOffset.x, lstmOffset.y)
+                        gruPath.moveTo(gruOffset.x, gruOffset.y)
+                        transformerPath.moveTo(transOffset.x, transOffset.y)
+                    } else {
+                        lstmPath.lineTo(lstmOffset.x, lstmOffset.y)
+                        gruPath.lineTo(gruOffset.x, gruOffset.y)
+                        transformerPath.lineTo(transOffset.x, transOffset.y)
+                    }
+
+                    pt.historicalDemand?.let { hist ->
+                        val histOffset = getOffset(idx, hist)
+                        if (idx == 0) {
+                            historicalPath.moveTo(histOffset.x, histOffset.y)
+                        } else {
+                            historicalPath.lineTo(histOffset.x, histOffset.y)
+                        }
+                    }
+                }
+
+                drawPath(
+                    path = historicalPath,
+                    color = SoftGrayText,
+                    style = Stroke(
+                        width = 2.dp.toPx(),
+                        pathEffect = dashedPathEffect
+                    )
+                )
+
+                drawPath(
+                    path = lstmPath,
+                    color = CyberCobalt,
+                    style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round)
+                )
+
+                drawPath(
+                    path = gruPath,
+                    color = FutureViolet,
+                    style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
+                )
+
+                drawPath(
+                    path = transformerPath,
+                    color = NeonEmerald,
+                    style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
+                )
             }
         }
     }
@@ -190,98 +271,6 @@ private fun DrawScope.drawXLabels(
             )
         }
     }
-}
-
-private fun DrawScope.drawConfidenceInterval(
-    points: List<DemandForecastPoint>,
-    getPointOffset: (Int, Double) -> Offset
-) {
-    val pathInterval = Path()
-    // Top boundary (Confidence Max)
-    points.forEachIndexed { idx, pt ->
-        val offset = getPointOffset(idx, pt.confidenceIntervalMax)
-        if (idx == 0) pathInterval.moveTo(offset.x, offset.y) else pathInterval.lineTo(offset.x, offset.y)
-    }
-    // Bottom boundary (Confidence Min) backward
-    for (idx in points.indices.reversed()) {
-        val pt = points[idx]
-        val offset = getPointOffset(idx, pt.confidenceIntervalMin)
-        pathInterval.lineTo(offset.x, offset.y)
-    }
-    pathInterval.close()
-
-    drawPath(
-        path = pathInterval,
-        color = CyberCobalt.copy(alpha = 0.1f),
-        style = androidx.compose.ui.graphics.drawscope.Fill
-    )
-}
-
-private fun DrawScope.drawPredictionLines(
-    points: List<DemandForecastPoint>,
-    getPointOffset: (Int, Double) -> Offset
-) {
-    val lstmPath = Path()
-    val gruPath = Path()
-    val transformerPath = Path()
-    val historicalPath = Path()
-
-    points.forEachIndexed { idx, pt ->
-        val lstmOffset = getPointOffset(idx, pt.lstmForecast)
-        val gruOffset = getPointOffset(idx, pt.gruForecast)
-        val transOffset = getPointOffset(idx, pt.transformerForecast)
-
-        if (idx == 0) {
-            lstmPath.moveTo(lstmOffset.x, lstmOffset.y)
-            gruPath.moveTo(gruOffset.x, gruOffset.y)
-            transformerPath.moveTo(transOffset.x, transOffset.y)
-        } else {
-            lstmPath.lineTo(lstmOffset.x, lstmOffset.y)
-            gruPath.lineTo(gruOffset.x, gruOffset.y)
-            transformerPath.lineTo(transOffset.x, transOffset.y)
-        }
-
-        // Historical points
-        pt.historicalDemand?.let { hist ->
-            val histOffset = getPointOffset(idx, hist)
-            if (idx == 0) {
-                historicalPath.moveTo(histOffset.x, histOffset.y)
-            } else {
-                historicalPath.lineTo(histOffset.x, histOffset.y)
-            }
-        }
-    }
-
-    // Draw Historical
-    drawPath(
-        path = historicalPath,
-        color = SoftGrayText,
-        style = Stroke(
-            width = 2.dp.toPx(),
-            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
-        )
-    )
-
-    // Draw LSTM Line
-    drawPath(
-        path = lstmPath,
-        color = CyberCobalt,
-        style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round)
-    )
-
-    // Draw GRU Line
-    drawPath(
-        path = gruPath,
-        color = FutureViolet,
-        style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
-    )
-
-    // Draw Transformer Line
-    drawPath(
-        path = transformerPath,
-        color = NeonEmerald,
-        style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
-    )
 }
 
 /**
@@ -404,6 +393,8 @@ fun LegendIndicator(
     isDashed: Boolean = false,
     isBlock: Boolean = false
 ) {
+    val dashedPathEffect = remember { PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f) }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -421,7 +412,7 @@ fun LegendIndicator(
                     start = Offset(0f, size.height / 2),
                     end = Offset(size.width, size.height / 2),
                     strokeWidth = 2.dp.toPx(),
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
+                    pathEffect = dashedPathEffect
                 )
             }
         } else {

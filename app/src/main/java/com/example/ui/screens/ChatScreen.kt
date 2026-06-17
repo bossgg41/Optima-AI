@@ -77,6 +77,25 @@ fun ChatScreen(
                 .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            if (messages.isEmpty() && !isChatLoading) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(Icons.Default.Send, contentDescription = null, tint = SoftGrayText, modifier = Modifier.size(48.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "No messages yet. Start a conversation!",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = SoftGrayText
+                        )
+                    }
+                }
+            }
+
             items(messages) { msg ->
                 val isAi = msg.sender.contains("AI") || msg.sender.contains("System")
                 
@@ -166,6 +185,17 @@ fun ChatScreen(
                     unfocusedBorderColor = SolidGrayCard,
                     focusedTextColor = PureWhite,
                     unfocusedTextColor = PureWhite
+                ),
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                    imeAction = androidx.compose.ui.text.input.ImeAction.Send
+                ),
+                keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                    onSend = {
+                        if (rawInputText.isNotBlank()) {
+                            viewModel.sendChatMessage(rawInputText)
+                            rawInputText = ""
+                        }
+                    }
                 )
             )
 

@@ -7,6 +7,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Send
@@ -166,6 +169,15 @@ fun ChatScreen(
                     unfocusedBorderColor = SolidGrayCard,
                     focusedTextColor = PureWhite,
                     unfocusedTextColor = PureWhite
+                ),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                keyboardActions = KeyboardActions(
+                    onSend = {
+                        if (rawInputText.isNotBlank()) {
+                            viewModel.sendChatMessage(rawInputText)
+                            rawInputText = ""
+                        }
+                    }
                 )
             )
 

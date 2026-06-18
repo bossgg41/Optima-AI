@@ -161,6 +161,17 @@ fun ChatScreen(
                 modifier = Modifier
                     .weight(1f)
                     .testTag("chat_input_text_field"),
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                    imeAction = androidx.compose.ui.text.input.ImeAction.Send
+                ),
+                keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                    onSend = {
+                        if (rawInputText.isNotBlank()) {
+                            viewModel.sendChatMessage(rawInputText)
+                            rawInputText = ""
+                        }
+                    }
+                ),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = NeonEmerald,
                     unfocusedBorderColor = SolidGrayCard,

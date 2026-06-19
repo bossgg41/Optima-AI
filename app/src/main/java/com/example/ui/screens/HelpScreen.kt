@@ -329,6 +329,10 @@ Generated on: 2026-05-23 (DeepOptima Executive Engine)
                         },
                         label = { Text("Enter Password (e.g., admin)", color = SoftGrayText) },
                         isError = authError,
+                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Password
+                        ),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = PureWhite,
                             unfocusedTextColor = PureWhite

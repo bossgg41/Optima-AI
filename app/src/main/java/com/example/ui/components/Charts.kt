@@ -119,17 +119,10 @@ fun ComparativeForecastChart(
 
                 val stepX = chartWidth / (points.size - 1)
 
-                // Helper map values to coordinates
-                fun getPointOffset(index: Int, rawValue: Double): Offset {
-                    val x = paddingLeft + (index * stepX)
-                    val y = height - paddingBottom - (((rawValue - minVal) / valRange).toFloat() * chartHeight)
-                    return Offset(x, y)
-                }
-
                 drawGridLinesAndMetrics(texMeasurer, minVal, valRange, paddingLeft, paddingRight, paddingBottom, chartHeight)
                 drawXLabels(texMeasurer, points, paddingLeft, paddingBottom, stepX)
-                drawConfidenceInterval(points, ::getPointOffset)
-                drawPredictionLines(points, ::getPointOffset)
+                drawConfidenceInterval(points, minVal, valRange, chartHeight, paddingLeft, paddingBottom, stepX)
+                drawPredictionLines(points, minVal, valRange, chartHeight, paddingLeft, paddingBottom, stepX)
             }
         }
     }
@@ -194,19 +187,26 @@ private fun DrawScope.drawXLabels(
 
 private fun DrawScope.drawConfidenceInterval(
     points: List<DemandForecastPoint>,
-    getPointOffset: (Int, Double) -> Offset
+    minVal: Double,
+    valRange: Double,
+    chartHeight: Float,
+    paddingLeft: Float,
+    paddingBottom: Float,
+    stepX: Float
 ) {
     val pathInterval = Path()
     // Top boundary (Confidence Max)
     points.forEachIndexed { idx, pt ->
-        val offset = getPointOffset(idx, pt.confidenceIntervalMax)
-        if (idx == 0) pathInterval.moveTo(offset.x, offset.y) else pathInterval.lineTo(offset.x, offset.y)
+        val x = paddingLeft + (idx * stepX)
+        val y = size.height - paddingBottom - (((pt.confidenceIntervalMax - minVal) / valRange).toFloat() * chartHeight)
+        if (idx == 0) pathInterval.moveTo(x, y) else pathInterval.lineTo(x, y)
     }
     // Bottom boundary (Confidence Min) backward
     for (idx in points.indices.reversed()) {
         val pt = points[idx]
-        val offset = getPointOffset(idx, pt.confidenceIntervalMin)
-        pathInterval.lineTo(offset.x, offset.y)
+        val x = paddingLeft + (idx * stepX)
+        val y = size.height - paddingBottom - (((pt.confidenceIntervalMin - minVal) / valRange).toFloat() * chartHeight)
+        pathInterval.lineTo(x, y)
     }
     pathInterval.close()
 
@@ -219,7 +219,12 @@ private fun DrawScope.drawConfidenceInterval(
 
 private fun DrawScope.drawPredictionLines(
     points: List<DemandForecastPoint>,
-    getPointOffset: (Int, Double) -> Offset
+    minVal: Double,
+    valRange: Double,
+    chartHeight: Float,
+    paddingLeft: Float,
+    paddingBottom: Float,
+    stepX: Float
 ) {
     val lstmPath = Path()
     val gruPath = Path()
@@ -227,27 +232,29 @@ private fun DrawScope.drawPredictionLines(
     val historicalPath = Path()
 
     points.forEachIndexed { idx, pt ->
-        val lstmOffset = getPointOffset(idx, pt.lstmForecast)
-        val gruOffset = getPointOffset(idx, pt.gruForecast)
-        val transOffset = getPointOffset(idx, pt.transformerForecast)
+        val x = paddingLeft + (idx * stepX)
+
+        val lstmY = size.height - paddingBottom - (((pt.lstmForecast - minVal) / valRange).toFloat() * chartHeight)
+        val gruY = size.height - paddingBottom - (((pt.gruForecast - minVal) / valRange).toFloat() * chartHeight)
+        val transY = size.height - paddingBottom - (((pt.transformerForecast - minVal) / valRange).toFloat() * chartHeight)
 
         if (idx == 0) {
-            lstmPath.moveTo(lstmOffset.x, lstmOffset.y)
-            gruPath.moveTo(gruOffset.x, gruOffset.y)
-            transformerPath.moveTo(transOffset.x, transOffset.y)
+            lstmPath.moveTo(x, lstmY)
+            gruPath.moveTo(x, gruY)
+            transformerPath.moveTo(x, transY)
         } else {
-            lstmPath.lineTo(lstmOffset.x, lstmOffset.y)
-            gruPath.lineTo(gruOffset.x, gruOffset.y)
-            transformerPath.lineTo(transOffset.x, transOffset.y)
+            lstmPath.lineTo(x, lstmY)
+            gruPath.lineTo(x, gruY)
+            transformerPath.lineTo(x, transY)
         }
 
         // Historical points
         pt.historicalDemand?.let { hist ->
-            val histOffset = getPointOffset(idx, hist)
+            val histY = size.height - paddingBottom - (((hist - minVal) / valRange).toFloat() * chartHeight)
             if (idx == 0) {
-                historicalPath.moveTo(histOffset.x, histOffset.y)
+                historicalPath.moveTo(x, histY)
             } else {
-                historicalPath.lineTo(histOffset.x, histOffset.y)
+                historicalPath.lineTo(x, histY)
             }
         }
     }
